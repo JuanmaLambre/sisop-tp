@@ -1,0 +1,47 @@
+26/09/2015 14:48-lucas-AFINSTAL-INFO-
+Perl Version: This is perl 5, version 20, subversion 1 (v5.20.1) built for x86_64-linux-gnu-thread-multi (with 37 registered patches, see perl -V for more detail) Copyright 1987-2014, Larry Wall Perl may be copied only under the terms of either the Artistic License or the GNU General Public License, which may be found in the Perl 5 source kit. Complete documentation for Perl, including FAQ lists, should be found on this system using "man perl" or "perldoc perl". If you have access to the Internet, point your browser at http://www.perl.org/, the Perl Home Page.
+26/09/2015 14:49-lucas-AFINSTAL-INFO-
+*************************************************** 
+*	 Proceso de Instalación de "AFRA-J" 	* 
+*************************************************** 
+ A T E N C I O N: Al instalar UD. expresa aceptar los términos y condiciones 
+del "ACUERDO DE LICENCIA DE SOFTWARE" incluido en este paquete. 
+Acepta? (si – no): si
+26/09/2015 14:49-lucas-AFINSTAL-INFO-
+Defina el directorio de instalación de los ejecutables (Grupo2/bin): Grupo2/bin
+26/09/2015 14:49-lucas-AFINSTAL-INFO-
+Defina directorio para maestros y tablas (Grupo2/mae): Grupo2/mae
+26/09/2015 14:49-lucas-AFINSTAL-INFO-
+Defina el Directorio de recepción de archivos de llamadas (Grupo2/novedades): Grupo2/novedades
+26/09/2015 14:49-lucas-AFINSTAL-INFO-
+Defina espacio mínimo libre para la recepción de archivos de llamadas en Mbytes (100): 100
+26/09/2015 14:49-lucas-AFINSTAL-INFO-
+Defina el directorio de grabación de los archivos de llamadas aceptadas (Grupo2/aceptadas): Grupo2/aceptadas
+26/09/2015 14:49-lucas-AFINSTAL-INFO-
+Defina el directorio de grabación de los registros de llamadas sospechosas (Grupo2/sospechosas): Grupo2/sospechosas
+26/09/2015 14:49-lucas-AFINSTAL-INFO-
+Defina el directorio de grabación de los reportes (Grupo2/reportes): Grupo2/reportes
+26/09/2015 14:49-lucas-AFINSTAL-INFO-
+Defina el directorio para los archivos de log (Grupo2/log): Grupo2/log
+26/09/2015 14:49-lucas-AFINSTAL-INFO-
+Defina el nombre para la extensión de los archivos de log (lg): lg
+26/09/2015 14:49-lucas-AFINSTAL-INFO-
+Defina el tamaño máximo para cada archivo de log en Kbytes (400): 400
+26/09/2015 14:49-lucas-AFINSTAL-INFO-
+Defina el directorio de grabación de Archivos rechazados (Grupo2/rechazadas): Grupo2/rechazadas
+26/09/2015 14:49-lucas-AFINSTAL-INFO-
+Directorio de Ejecutables: Grupo2/bin 
+Directorio de Maestros y Tablas: Grupo2/mae 
+Directorio de recepción de archivos de llamadas: Grupo2/novedades 
+Espacio mínimo libre para arribos: 100 Mb 
+Directorio de Archivos de llamadas Aceptados: Grupo2/aceptadas 
+Directorio de Archivos de llamadas Sospechosas: Grupo2/sospechosas 
+Directorio de Archivos de Reportes de llamadas: Grupo2/reportes 
+Directorio de Archivos de Log: Grupo2/log 
+Extensión para los archivos de log: lg 
+Tamaño máximo para los archivos de log: 400 Kb 
+Directorio de Archivos Rechazados: Grupo2/rechazadas 
+Estado de la instalación: LISTA 
+Desea continuar con la instalación? (si - no) si
+26/09/2015 14:50-lucas-AFINSTAL-INFO-
+Iniciando Instalación. Esta Ud. seguro? (si - no): si
