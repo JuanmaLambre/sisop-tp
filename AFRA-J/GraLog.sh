@@ -3,21 +3,6 @@
 usuario=`whoami`
 
 
-checkParameters(){
-	if [ "$#" -lt 2 ];then
-		echo "Error en Log: Cantidad de parametros invalidos. Se deben proporcionar al menos 2 parametros"
-		exit 1
-	fi
-}
-
-setDefaultMessageType(){
-	if [ "$#" -lt 3 ];then
-		echo "INFO"
-	else
-		echo $3
-	fi
-}
-
 checkMessagType(){
 	if [ "$1" != "INFO" -a "$1" != "WAR" -a "$1" != "ERR" ];then
 		echo "Error en Log: Tipo de mensaje invalido. Debe Ser de ERR, WAR, INFO"
@@ -29,7 +14,8 @@ checkMessagType(){
 getRuta(){
 if [ "$1" = "AFINSTAL" ]
 then
-	 echo "logdir"
+	 echo "$GRUPO/conf"
+	 #echo "log"
 else
 	if [ ! -f "$BINDIR/$1" ]
 	then
@@ -61,14 +47,25 @@ fi
 }
 
 
-
 getFileSize(){
-	stat -f%z $1
+	#stat -f%z $1  #ufunca en mac
+	stat -c %s $1  #funca en linux
 }
 
 #comando , mensaje, tipo  ej:(AFINSTAL, hola todos, INFO)
-checkParameters $@
-msgType=$(setDefaultMessageType $@)
+#checkparam
+	if [ "$#" -lt 2 ];then
+		echo "Error en Log: Cantidad de parametros invalidos. Se deben proporcionar al menos 2 parametros"
+		exit 1
+	fi
+
+#setdefault
+	if [ "$#" -lt 3 ];then
+		msgType="INFO"
+	else
+		msgType=$3
+	fi
+
 checkMessagType $msgType
 ruta=$(getRuta $1)
 extension=$(getExtension $1)
