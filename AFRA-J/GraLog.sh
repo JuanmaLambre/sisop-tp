@@ -48,7 +48,7 @@ fi
 
 
 getFileSize(){
-	#stat -f%z $1  #ufunca en mac
+	#stat -f%z $1  #ufunca en mac 
 	stat -c %s $1  #funca en linux
 }
 
