@@ -15,7 +15,7 @@ getRuta(){
 if [ "$1" = "AFINSTAL" ]
 then
 	 echo "$GRUPO/conf"
-	 #echo "log"
+	 #echo "logdir"
 else
 	if [ ! -f "$BINDIR/$1" ]
 	then
