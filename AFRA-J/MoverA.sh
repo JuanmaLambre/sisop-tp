@@ -1,11 +1,6 @@
 #!/bin/bash
 
-#HIPOTESIS:
-# PARAMETRO OPCIONAL es un parametro que el usuario elige si pone o no, 
-#       el desarrollador no elige el caso
-
 #cargo parametros, chequeo numero:
-
 if [ $# == 2 ] 
 then
    archivo_fuente=$1
@@ -20,6 +15,7 @@ else
         comando_que_me_invoca=$3
     else
         echo "Usage: MoverA origen destino [invocante]"
+        ./GraLog.sh $comando_que_me_invoca "Usage: MoverA origen destino [invocante]" "ERR"
         exit 1
     fi
 fi
@@ -28,6 +24,7 @@ fi
 if [ "$1" = "$2" ]
 then
     echo "El origen y el destino son iguales, no se mueve el archivo"
+    ./GraLog.sh $comando_que_me_invoca "El origen y el destino son iguales, no se mueve el archivo" "ERR"
     exit 2
 fi
 
@@ -36,6 +33,7 @@ fi
 if [ ! -f "$archivo_fuente" ]
 then
     echo "El archivo de origen \"$archivo_fuente\" no existe, no se mueve nada"
+    ./GraLog.sh $comando_que_me_invoca "'echo "El archivo de origen \"$archivo_fuente\" no existe, no se mueve nada"'" "ERR"
     exit 3
 fi
 
@@ -44,6 +42,7 @@ fi
 if [ ! -d "$directorio_destino" ]
 then
     echo "El directorio destino \"$directorio_destino\" no existe, no se mueve nada"
+    bash ./GraLog.sh $comando_que_me_invoca "'echo "El directorio destino \"$directorio_destino\" no existe, no se mueve nada"'" "ERR"
     exit 4
 fi
 
@@ -55,8 +54,24 @@ then
     exit 0
 fi
 
- 
-echo "duplicado, man"
+#Si no hay carpeta de duplicados, la creo
+if [ ! -d "$directorio_destino/duplicados" ]
+then
+    mkdir $directorio_destino/duplicados
+fi
+
+#Si no existe en duplicados, lo copio a duplicados y salgo
+if [ ! -f "$directorio_destino/duplicados/$nombre_archivo" ]
+then
+    #mv "$archivo_fuente" "$directorio_destino/duplicados"
+    cp "$archivo_fuente" "$directorio_destino/duplicados/$nombre_archivo" #para probar, solamente lo copio
+    exit 0
+fi
+
+#FALTA PROGRAMAR ESTE CONTADOR
+CONTADOR_DUPLICADOS=0
+
+cp "$archivo_fuente" "$directorio_destino/duplicados/$nombre_archivo.$CONTADOR_DUPLICADOS"
 
 exit 0
 
