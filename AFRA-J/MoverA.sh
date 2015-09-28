@@ -70,6 +70,10 @@ fi
 
 #FALTA PROGRAMAR ESTE CONTADOR
 CONTADOR_DUPLICADOS=0
+while [ -f "$directorio_destino/duplicados/$nombre_archivo.$CONTADOR_DUPLICADOS" ]
+do
+    CONTADOR_DUPLICADOS=$((CONTADOR_DUPLICADOS+1))
+done
 
 cp "$archivo_fuente" "$directorio_destino/duplicados/$nombre_archivo.$CONTADOR_DUPLICADOS"
 
