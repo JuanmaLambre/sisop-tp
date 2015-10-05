@@ -20,7 +20,8 @@ function obtenerVariable {
 }
 
 function checkEnvSet() {
-    if [ -z ${} ]
+    # TODO: REFACTOR
+    if [ ! -z $BINDIR ]
     then
         echo "Ambiente ya inicializado. Para reiniciar termine la sesión e ingrese nuevamente."
         $GRALOG "AFINI" "Ambiente ya inicializado" "ERR"
@@ -116,7 +117,7 @@ if [[ $REPLY =~ ^[Ss]$ ]]
 then
     if [[ $(ps -aux | grep -e "[0-9] [a-z]* AFREC") -ne "" ]]
     then
-        $BINDIR/Arrancar.sh
+        bash $BINDIR/Arrancar.sh &
         echo "Para detenerlo ejecute el archivo Detener.sh"
     else
         echo "AFREC ya esta corriendo"
