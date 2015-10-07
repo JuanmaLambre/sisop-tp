@@ -86,8 +86,20 @@ sub filterRegistersByNumber{
 
 
 sub loadRegisterFilters{
+
+	my %registerFiltersHash;
+
+	# my @emptyLisy = ();
+
+	# $registerFiltersHash{"centrals"} = \@emptyLisy;
+	# $registerFiltersHash{"agents"} = \@emptyLisy;
+	# $registerFiltersHash{"unmbrals"} = \@emptyLisy;
+	# $registerFiltersHash{"types"} = \@emptyLisy;
+	# $registerFiltersHash{"times"} = \@emptyLisy;
+	# $registerFiltersHash{"numbers"} =  \@emptyLisy;
+
+
 	$filter = '0';
-	%registerFiltersHash;
 	while($filter != '7'){
 		system("clear");
 		showRegisterFiltersMenu();
@@ -112,8 +124,8 @@ sub loadRegisterFilters{
 			$registerFiltersHash{"numbers"} = filterRegistersByNumber();
 		}
 	}
-	#@centrals = @{$registerFiltersHash{"centrals"}};
-	#print("hash{centrals} = @centrals\n");
+	@centrals = @{$registerFiltersHash{"centrals"}};
+	print("hash{centrals} = @centrals\n");
 	return %registerFiltersHash;
 }
 
@@ -228,13 +240,16 @@ sub processFiles{
 	my %filters = %$registerFiltersHashRef;
 	#print("inputFiles = @files\n");
 	my @centrals = @{$filters{"centrals"}};
-	print("centrals @centrals\n");
+	my $centralSize= scalar @centrals;
+	#print("centrals @centrals\n");
+	#print "central size: $centralSize";
+
 	my $fileHdl;
 	foreach my $file (@files){
 		open ($fileHdl,"<", $file) or die "no se puede abrir $file: $!";
 		while (my $linea=<$fileHdl>) {
 			@tokens = split /;/, $linea;
-			if (not contains(@centrals, $tokens[0])){
+			if (not (  contains(@centrals, $tokens[0]) or $centralSize==0)){
 				next;
 			}
 
