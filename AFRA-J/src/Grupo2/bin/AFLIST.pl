@@ -17,8 +17,9 @@ sub isInitialized{
 
 sub isAlreadyRunning{
 	$counter = `ps -a | grep -c 'AFLIST'`;
-	
-	if($counter > 3){
+	$counterIfIsNotRunning = 2; #Linux
+	#$counterIfIsNotRunning = 3; #MAC
+	if($counter > $counterIfIsNotRunning){
 		return 1;
 	}else{
 		return 0;
@@ -28,6 +29,17 @@ sub isAlreadyRunning{
 
 sub showHelp{
 	print("ayuda");
+}
+
+sub showStatisticsMenu{
+	print("\n---------------------BUSQUEDA DE ESTADISTICAS---------------------\n\n");
+	print("1. Ver la central con mayor cantidad de llamadas sospechosas\n");
+	print("2. Ver la oficina con mayor cantidad de llamadas sospechosas\n");
+	print("3. Ver el agente con mayor cantidad de llamadas sospechosas\n");
+	print("4. Ver el destino con mayor cantidad de llamadas sospechosas\n");
+	print("5. Ver el ranking de umbrales\n");
+	print("6. Salir de este menu\n");
+	print("\n\nIngrese una consulta: ");
 }
 
 sub showRegisterFiltersMenu{
@@ -223,6 +235,86 @@ sub main{
 		%registerFiltersHash = loadRegisterFilters();
 		printRegisterFilters(%registerFiltersHash);
 		processFiles(\@inputFiles, \%registerFiltersHash);
+	}
+	if (contains(@ARGV, "-s")) {
+		%fileFiltersHash = loadInputFilesFilters();
+		@inputFiles = loadInputFiles(%fileFiltersHash);
+		my $fileHdl;
+		my %hashCentralsCalls;
+		my %hashOfficesCalls;
+		my %hashAgentsCalls;
+		my %hashDestinationsCalls;
+		my %hashUmbralsCalls;
+		#print("files: @inputFiles\n");
+		#$in = <STDIN>;
+		foreach my $fileName (@inputFiles){
+			my @params = split /_/, $fileName;
+			$office = $params[0];
+			open ($fileHdl,"<", $fileName) or die "no se puede abrir $file: $!";
+			while (my $linea=<$fileHdl>) {
+				@tokens = split /;/, $linea;
+				
+				if (exists($hashCentralsCalls{$tokens[0]})){
+					$hashCentralsCalls{$tokens[0]} = $hashCentralsCalls{$tokens[0]} + 1;
+				}else{
+					$hashCentralsCalls{$tokens[0]} = 1;
+				}
+				
+				if (exists($hashOfficesCalls{$office})){
+					$hashOfficesCalls{$office} = $hashOfficesCalls{$office} + 1;
+				}else{
+					$hashOfficesCalls{$office} = 1;
+				}
+
+				if (exists($hashAgentsCalls{$tokens[1]})){
+					$hashAgentsCalls{$tokens[1]} = $hashAgentsCalls{$tokens[1]} + 1;
+				}else{
+					$hashAgentsCalls{$tokens[1]} = 1;
+				}
+
+
+				if (exists($hashDestinationsCalls{$tokens[10]})){
+					$hashDestinationsCalls{$tokens[10]} = $hashDestinationsCalls{$tokens[10]} + 1;
+				}else{
+					$hashDestinationsCalls{$tokens[10]} = 1;
+				}
+
+				if (exists($hashUmbralsCalls{$tokens[2]})){
+					$hashUmbralsCalls{$tokens[2]} = $hashUmbralsCalls{$tokens[2]} + 1;
+				}else{
+					$hashUmbralsCalls{$tokens[2]} = 1;
+				}
+			}			
+			close ($fileHdl);
+		}
+		showStatisticsMenu();
+		my $querry = <STDIN>;
+		while($querry != '6'){
+
+			if ( $querry == 1 ){
+				print();
+			}
+			if ( $querry == 2 ){
+				print();	
+			}
+			if ( $querry == 3 ){
+				print();
+			}
+			if ( $querry == 4 ){
+			    foreach my $call (sort { $hashDestinationsCalls{$a} <=> $hashDestinationsCalls{$b} } keys %hashDestinationsCalls) {
+			    	#aca, si solo quiero ver el 1ro, queda asi, con el "last". sino poner el ranking entero 
+		       		print("Destino con mayor cantidad de llamadas sospechosas: $call: $hashDestinationsCalls{$call}");
+					last;
+    			}
+			}
+			if ( $querry == 5 ){
+				print("Umbrales\n");
+			}
+			$in = <STDIN>;
+			system("clear");
+			showStatisticsMenu();
+			$querry = <STDIN>;
+		}
 	}
 }
 
