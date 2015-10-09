@@ -32,18 +32,20 @@ sub showHelp{
 }
 
 sub showStatisticsMenu{
+	system("clear");
 	print("\n---------------------BUSQUEDA DE ESTADISTICAS---------------------\n\n");
-	print("1. Ver la central con mayor cantidad de llamadas sospechosas\n");
-	print("2. Ver la oficina con mayor cantidad de llamadas sospechosas\n");
-	print("3. Ver el agente con mayor cantidad de llamadas sospechosas\n");
-	print("4. Ver el destino con mayor cantidad de llamadas sospechosas\n");
-	print("5. Ver el ranking de umbrales\n");
-	print("6. Salir de este menu\n");
+	print("1. Buscar estadisticas de centrales...\n");
+	print("2. Buscar estadisticas de oficinas...\n");
+	print("3. Buscar estadisticas de agentes...\n");
+	print("4. Buscar estadisticas de destinos...\n");
+	print("5. Ver el ranking de umbrales.\n");
+	print("6. Salir de este menu.\n");
 	print("\n\nIngrese una consulta: ");
 }
 
 sub showRegisterFiltersMenu{
-	print("\n---------------------FILTROS DE BUSQUEDA---------------------\n\n");
+	system("clear");
+	print("\n-----------------------FILTROS DE BUSQUEDA-----------------------\n\n");
 	print("1. Filtrar por central (una, varias, todas)\n");
 	print("2. Filtrar por agente (uno, varios, todos)\n");
 	print("3. Filtrar por umbral (uno, varios, todos)\n");
@@ -113,7 +115,6 @@ sub loadRegisterFilters{
 
 	$filter = '0';
 	while($filter != '7'){
-		system("clear");
 		showRegisterFiltersMenu();
 		$filter = <STDIN>;
 		chomp($filter);
@@ -292,26 +293,105 @@ sub main{
 		while($querry != '6'){
 
 			if ( $querry == 1 ){
-				print();
+				#FALTA MOSTRAR DETALLES DE LA CENTRAL, ARMARSE UN HASH CON EL ARCHIVO MAE AL PPIO Y LISTO
+				print("Si desea ver la central con mayor cantidad de llamadas sospechosas, ingrese 1.\nSi desea ver el ranking de centrales, ingrese 2.\n");
+				my $op = <STDIN>;
+				if ($op == 1){
+					foreach my $call (sort { -($hashCentralsCalls{$a} <=> $hashCentralsCalls{$b}) } keys %hashCentralsCalls) { 
+			       		print("Central con mayor cantidad de llamadas sospechosas: $call: $hashCentralsCalls{$call}\n");
+						last;
+	    			}	
+	    		}else{
+	    			if ($op == 2){
+	    				print("Ranking de centrales:\n");
+	    				my $counter = 1;
+						foreach my $call (sort { -($hashCentralsCalls{$a} <=> $hashCentralsCalls{$b}) } keys %hashCentralsCalls) {
+					    	print("$counter: $call ($hashCentralsCalls{$call})\n");
+		    				++$counter;
+		    			}
+
+	    			}else{
+	    				print("La opcion ingresada no es valida\n");
+	    			}
+	    		}
 			}
 			if ( $querry == 2 ){
-				print();	
+			    print("Si desea ver la oficina con mayor cantidad de llamadas sospechosas, ingrese 1.\nSi desea ver el ranking de oficinas, ingrese 2.\n");
+				my $op = <STDIN>;
+				if ($op == 1){
+					foreach my $call (sort { -($hashOfficesCalls{$a} <=> $hashOfficesCalls{$b}) } keys %hashOfficesCalls) { 
+			       		print("Oficina con mayor cantidad de llamadas sospechosas: $call: $hashOfficesCalls{$call}\n");
+						last;
+	    			}	
+	    		}else{
+	    			if ($op == 2){
+	    				print("Ranking de oficinas:\n");
+	    				my $counter = 1;
+						foreach my $call (sort { -($hashOfficesCalls{$a} <=> $hashOfficesCalls{$b}) } keys %hashOfficesCalls) {
+					    	print("$counter: $call ($hashOfficesCalls{$call})\n");
+		    				++$counter;
+		    			}
+
+	    			}else{
+	    				print("La opcion ingresada no es valida\n");
+	    			}
+	    		}
 			}
 			if ( $querry == 3 ){
-				print();
+				print("Si desea ver al agente con mayor cantidad de llamadas sospechosas, ingrese 1.\nSi desea ver el ranking de agentes, ingrese 2.\n");
+				my $op = <STDIN>;
+				if ($op == 1){
+					foreach my $call (sort { -($hashAgentsCalls{$a} <=> $hashAgentsCalls{$b}) } keys %hashAgentsCalls) { 
+			       		print("Agente con mayor cantidad de llamadas sospechosas: $call: $hashAgentsCalls{$call}\n");
+						last;
+	    			}	
+	    		}else{
+	    			if ($op == 2){
+	    				print("Ranking de agentes:\n");
+	    				my $counter = 1;
+						foreach my $call (sort { -($hashAgentsCalls{$a} <=> $hashAgentsCalls{$b}) } keys %hashAgentsCalls) {
+					    	print("$counter: $call ($hashAgentsCalls{$call})\n");
+		    				++$counter;
+		    			}
+
+	    			}else{
+	    				print("La opcion ingresada no es valida\n");
+	    			}
+	    		}
 			}
 			if ( $querry == 4 ){
-			    foreach my $call (sort { $hashDestinationsCalls{$a} <=> $hashDestinationsCalls{$b} } keys %hashDestinationsCalls) {
-			    	#aca, si solo quiero ver el 1ro, queda asi, con el "last". sino poner el ranking entero 
-		       		print("Destino con mayor cantidad de llamadas sospechosas: $call: $hashDestinationsCalls{$call}");
-					last;
-    			}
+				print("Si desea ver el destino con mayor cantidad de llamadas sospechosas, ingrese 1.\nSi desea ver el ranking de destinos, ingrese 2.\n");
+				my $op = <STDIN>;
+				if ($op == 1){
+					foreach my $call (sort { -($hashDestinationsCalls{$a} <=> $hashDestinationsCalls{$b}) } keys %hashDestinationsCalls) { 
+			       		print("Destino con mayor cantidad de llamadas sospechosas: $call: $hashDestinationsCalls{$call}\n");
+						last;
+	    			}	
+	    		}else{
+	    			if ($op == 2){
+	    				print("Ranking de destinos:\n");
+	    				my $counter = 1;
+						foreach my $call (sort { -($hashDestinationsCalls{$a} <=> $hashDestinationsCalls{$b}) } keys %hashDestinationsCalls) {
+					    	print("$counter: $call ($hashDestinationsCalls{$call})\n");
+		    				++$counter;
+		    			}
+
+	    			}else{
+	    				print("La opcion ingresada no es valida\n");
+	    			}
+	    		}
 			}
 			if ( $querry == 5 ){
-				print("Umbrales\n");
+				print("Ranking de umbrales (se ignoran los umbrales con una sola llamada sospechosa):\n");
+				my $counter = 1;
+			    foreach my $call (sort { -($hashUmbralsCalls{$a} <=> $hashUmbralsCalls{$b}) } keys %hashUmbralsCalls) { 
+		       		if ($hashUmbralsCalls{$call} > 1){
+		       			print("$counter: $call ($hashUmbralsCalls{$call})");	
+		       		}
+		       		++$counter;
+    			}
 			}
 			$in = <STDIN>;
-			system("clear");
 			showStatisticsMenu();
 			$querry = <STDIN>;
 		}
