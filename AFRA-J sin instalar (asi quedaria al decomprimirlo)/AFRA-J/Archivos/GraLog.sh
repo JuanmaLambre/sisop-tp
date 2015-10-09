@@ -14,7 +14,8 @@ checkMessagType(){
 getRuta(){
 if [ "$1" = "AFINSTAL" ]
 then
-	 echo Grupo2/conf #echo "logdir"
+	 echo "$CONFDIR"
+	 #echo "logdir"
 else
 	if [ ! -f "$BINDIR/$1" ]
 	then
@@ -46,24 +47,24 @@ fi
 }
 
 
-
 getFileSize(){
-	#stat -f%z $1
-	echo 1
+	#stat -f%z $1  #ufunca en mac 
+	stat -c %s $1  #funca en linux
 }
 
 #comando , mensaje, tipo  ej:(AFINSTAL, hola todos, INFO)
+#checkparam
+	if [ "$#" -lt 2 ];then
+		echo "Error en Log: Cantidad de parametros invalidos. Se deben proporcionar al menos 2 parametros"
+		exit 1
+	fi
 
-if [ "$#" -lt 2 ];then
-	echo "Error en Log: Cantidad de parametros invalidos. Se deben proporcionar al menos 2 parametros"
-	exit 1
-fi
-	
-if [ "$#" -lt 3 ];then
-	msgType="INFO"
-else
-	msgType=$3
-fi
+#setdefault
+	if [ "$#" -lt 3 ];then
+		msgType="INFO"
+	else
+		msgType=$3
+	fi
 
 checkMessagType $msgType
 ruta=$(getRuta $1)
@@ -83,7 +84,7 @@ fi
 size=$(getFileSize "$ruta/$1.$extension")
 #echo $size
 
-if [ 30 -gt 3724 ] #Verifico si el tamaño excedio el limite
+if [ "$size" -gt 3724 ] #Verifico si el tamaño excedio el limite
 then	
 	#Me quedo con las ultimas 50 lineas del log
 	tail -n -50 "$ruta/$1.log" > "$ruta/$1.tmp"

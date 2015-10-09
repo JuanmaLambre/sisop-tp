@@ -16,13 +16,14 @@ LOGEXT="lg"
 LOGSIZE="400"
 RECHDIR="$GRUPO/rechazadas"
 GRALOG="$ARCHDIR/GraLog.sh"
+MOVERA="$ARCHDIR/MoverA.sh"
 export CONFDIR="$GRUPO/conf"
 ARRAY_DIR=( )
 
 
 ################ Archivos de tablas, maestros y scripts ################
 
-ArchivosBIN=( "AFINI.sh" "AFREC.sh" "AFUMB.sh" "AFLIST.pl" "MoverA.sh" "GraLog.sh" "Detener.sh" "Arrancar.sh" "CrearDir.sh" )
+ArchivosBIN=( "AFINI.sh" "AFREC.sh" "AFUMB.sh" "AFLIST.pl" "GraLog.sh" "Detener.sh" "Arrancar.sh" "CrearDir.sh" "MoverA.sh")
 ArchivosMAE=( "agentes.csv" "CdA.csv" "CdP.csv" "centrales.csv" "umbrales.csv" )
 
 
@@ -47,6 +48,8 @@ MENSAJE_DIR_ERROR="El directorio ya fue utilizado o ingresó un nombre incorrect
 MENSAJE_ARCH_FALTANTES="Faltan archivos para continuar la instalación"
 MENSAJE_NUM_INCORRECTO="Ingrese un numero correcto"
 MENSAJE_SINO_INVALIDA="Ingrese una opcion valida (si - no):"
+MENSAJE_GRALOG_INEXIST="El programa GraLog.sh no existe. Sin el no se puede continuar la instalación. Porfavor devolverlo al directorio perteneciente o al directorio Archivos"
+MENSAJE_MOVERA_INEXIST="El programa MoverA.sh no existe. Sin el no se puede continuar la instalación. Porfavor devolverlo al directorio perteneciente o al directorio Archivos"
 
 
 ############### Funciones auxiliares ###############
@@ -105,7 +108,7 @@ function ValidarRespuestaSiNo {
 	ImprimirMensaje "$MENSAJE"
 	
 	read RESPUESTA
-	while [ $RESPUESTA != "si" -a $RESPUESTA != "no" ]
+	while [ "$RESPUESTA" = "" ] || [ $RESPUESTA != "si" -a $RESPUESTA != "no" ]
 	do
 		ImprimirMensaje "$MENSAJE_SINO_INVALIDA"
 		read RESPUESTA
@@ -227,6 +230,26 @@ case $INST_POINT in
 		confdir=$(grep "CONFDIR" "$CONFDIR/AFINSTAL.cnfg" | sed 's-^[^=]*=.*AFRA\-J/\(.*\)=[^=]*=[^=]*$-\1-' )
 		archdir="$ARCHDIR"
 		
+		#Verifico donde se encuentra GraLog	y MoverA, si no estan no puedo continuar
+		if [ -f "$bindir/GraLog.sh" ]
+		then
+			GRALOG=$bindir/GraLog.sh
+		elif ! [ -f "$ARCHDIR/GraLog.sh" ]
+		then
+			echo "$MENSAJE_GRALOG_INEXIST"
+			exit
+		fi
+		
+		if [ -f "$bindir/MoverA.sh" ]
+		then
+			MOVERA=$bindir/MoverA.sh
+		elif ! [ -f "$ARCHDIR/MoverA.sh" ]
+		then
+			echo "$MENSAJE_MOVERA_INEXIST"	
+			exit	
+		fi
+		
+		
 		#Vectores de archivos tanto faltantes como existentes
 		ArchivosBINFaltantes=( )
 		ArchivosMAEFaltantes=( )
@@ -251,12 +274,7 @@ case $INST_POINT in
 			fi
 		done
 		
-		#Verifico donde se encuentra GraLog	
-		if [ -f "$bindir/GraLog.sh" ]
-		then
-			GRALOG=$bindir/GraLog.sh		
-		fi
-		
+
 		#Estado de instalacion
 		MENSAJE_ESTADO_INST="\nDirectorio de Configuración: $confdir. Archivos: $(ls -t $confdir)
 							 \nDirectorio de Ejecutables: $bindir. Archivos: $(ls -t $bindir)
@@ -311,14 +329,12 @@ case $INST_POINT in
 		#Ubico los archivos donde deban ir
 		for file in ${ArchivosMAEFaltantes[*]}
 		do
-			#MoverA
-			mv "$archdir/$file" "$maedir"
+			bash $MOVERA "$archdir/$file" "$maedir"
 		done
 
 		for file in ${ArchivosBINFaltantes[*]}
 		do
-			#MoverA
-			mv "$archdir/$file" "$bindir"
+			bash $MOVERA "$archdir/$file" "$bindir"
 		done
 		
 		
@@ -398,7 +414,6 @@ case $INST_POINT in
 		MENSAJE_ESPACIO_MINIMO_NOV="\nDefina espacio mínimo libre para la recepción de archivos de llamadas en Mbytes ($DATASIZE): "
 		echo -n -e "$MENSAJE_ESPACIO_MINIMO_NOV"		
 		ESPACIO_LIBRE=$(pwd | df -P . | tail -1 | awk '{print $4}' )
-		#ESPACIO_LIBRE=$(pwd | df | sed -n '2p' | sed 's-^.* .* .* \([0-9]*\) .* .* .*$-\1-' )
 		let "ESPACIO_LIBRE = ESPACIO_LIBRE/1024"
 		DATASIZE=$(ValidarNumero $DATASIZE)
 		
@@ -503,22 +518,22 @@ case $INST_POINT in
 		bash Archivos/CrearDir.sh "$RECHDIR"
 		bash Archivos/CrearDir.sh "$RECHDIR/llamadas"
 	
-		#Ubico los scripts
-		echo "$MENSAJE_INST_PROGRAMAS"
-		for file in ${ArchivosBIN[*]}
-		do
-			#MoverA
-			mv "Archivos/$file" "$BINDIR"
-		done
 		
 		#Ubico los maestros y tablas
 		echo "$MENSAJE_INST_MAESTROS_TABLAS"	
 		for file in ${ArchivosMAE[*]}
 		do
-			#MoverA
-			mv "Archivos/$file" "$MAEDIR"
+			bash $MOVERA "$ARCHDIR/$file" "$MAEDIR"
 		done
 		
+		#Ubico los scripts
+		echo "$MENSAJE_INST_PROGRAMAS"
+		for file in ${ArchivosBIN[*]}
+		do
+			bash $MOVERA "$ARCHDIR/$file" "$BINDIR"
+		done
+		
+
 		#Guardo la configuracion actual
 		echo "$MENSAJE_ACTUALIZANDO_CONFIGURACION"
 		DATE=`date +"%y-%m-%d %H:%M"`
