@@ -4,7 +4,6 @@
 
 GRUPO="Grupo2"	
 ARCHDIR="Archivos"		
-CONFDIR="$GRUPO/conf"
 BINDIR="$GRUPO/bin"
 MAEDIR="$GRUPO/mae"
 NOVEDIR="$GRUPO/novedades"
@@ -17,6 +16,7 @@ LOGEXT="lg"
 LOGSIZE="400"
 RECHDIR="$GRUPO/rechazadas"
 GRALOG="$ARCHDIR/GraLog.sh"
+export CONFDIR="$GRUPO/conf"
 ARRAY_DIR=( )
 
 
