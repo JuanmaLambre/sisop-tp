@@ -17,8 +17,8 @@ sub isInitialized{
 
 sub isAlreadyRunning{
 	$counter = `ps -a | grep -c 'AFLIST'`;
-	$counterIfIsNotRunning = 2; #Linux
-	#$counterIfIsNotRunning = 3; #MAC
+	#$counterIfIsNotRunning = 2; #Linux
+	$counterIfIsNotRunning = 3; #MAC
 	if($counter > $counterIfIsNotRunning){
 		return 1;
 	}else{
@@ -68,9 +68,15 @@ sub filterRegistersByCentrals{
 }
 
 sub filterRegistersByAgents{
+
 	system("clear");
-	print("filterRegistersByAgents");
+	print("Ingrese los identificadores de los separados por una coma (\",\")");
 	$input = <STDIN>;
+	chomp($input);
+	my @agents = split /,/, $input;
+	print("agentes ingresados: @agents\n");
+	$input = <STDIN>;
+	return \@agents;
 }
 
 sub filterRegistersByUmbral{
@@ -137,8 +143,8 @@ sub loadRegisterFilters{
 			$registerFiltersHash{"numbers"} = filterRegistersByNumber();
 		}
 	}
-	@centrals = @{$registerFiltersHash{"centrals"}};
-	print("hash{centrals} = @centrals\n");
+	#@centrals = @{$registerFiltersHash{"centrals"}};
+	#print("hash{centrals} = @centrals\n");
 	return %registerFiltersHash;
 }
 
@@ -400,8 +406,10 @@ sub main{
 
 sub printRegisterFilters{
 	%registerFiltersHash = @_;
-	@centrals = @{$registerFiltersHash{"centrals"}};
+	my @centrals = @{$registerFiltersHash{"centrals"}};
+	my @agents = @{$registerFiltersHash{"agents"}};
 	print("in main, hash{centrals} = @centrals\n");
+	print("in main, hash{agents} = @agents\n");
 
 	$input = <STDIN>;
 }
@@ -413,6 +421,10 @@ sub processFiles{
 	#print("inputFiles = @files\n");
 	my @centrals = @{$filters{"centrals"}};
 	my $centralSize= scalar @centrals;
+
+	my @agents = @{$filters{"agents"}};
+	my $agentsSize= scalar @agents;
+
 	#print("centrals @centrals\n");
 	#print "central size: $centralSize";
 
@@ -422,6 +434,10 @@ sub processFiles{
 		while (my $linea=<$fileHdl>) {
 			@tokens = split /;/, $linea;
 			if (not (  contains(@centrals, $tokens[0]) or $centralSize==0)){
+				next;
+			}
+
+			if (not (  contains(@agents, $tokens[1]) or $agentsSize==0)){
 				next;
 			}
 
