@@ -103,8 +103,19 @@ sub filterRegistersByType{
 
 sub filterRegistersByTime{
 	system("clear");
-	print("filterRegistersByTime");
+	print("Debe ingresar un rango de tiempo de llamada con el formato sec-sec.\n");
+	print("\tPor ejemplo: \"10-134\" representa desde 10 segundos hasta 134\n");
+	my $range = "";
+	while(not isRangeCallTime($range)){
+		print("Escriba aqui un rango valido: ");
+		$range = <STDIN>;
+		chomp($range);
+	}
+	print("tiempo de llamada ingresados: $range\n");
 	$input = <STDIN>;
+
+	return \$range;
+
 }
 
 sub filterRegistersByNumber{
@@ -196,6 +207,10 @@ sub loadInputFiles{
 
 sub isRange{
 	return (@_[0] =~ /[0-9]{4}[0-9]{2}-[0-9]{4}[0-9]{2}/);
+}
+
+sub isRangeCallTime{
+	return (@_[0] =~ /^[0-9]*-[0-9]*$/);
 }
 
 sub loadInputFilesFilters{
@@ -420,14 +435,20 @@ sub printRegisterFilters{
 	my @agents = @{$registerFiltersHash{"agents"}};
 	my @umbrals = @{$registerFiltersHash{"umbrals"}};
 	my @types = @{$registerFiltersHash{"types"}};
+	my $times = ${$registerFiltersHash{"times"}};
+
+
 
 	print("Filtros Que Se Utilizaran:\n");
 	print("hash{centrals} = @centrals\n");
 	print("hash{agents} = @agents\n");
 	print("hash{umbrals} = @umbrals\n");
 	print("hash{types} = @types\n");
+	print("hash{times} = $times\n");
 
-	
+
+
+
 
 	
 
@@ -451,6 +472,16 @@ sub processFiles{
 	my @types = @{$filters{"types"}};
 	my $typesSize= scalar @types;
 
+
+	my $times = ${$filters{"times"}};
+	my @timesArray = split /-/, $times;
+
+
+	#print "times: $times";
+	#print "times Array: @timesArray";
+			
+	
+
 	
 
 	#print("centrals @centrals\n");
@@ -473,6 +504,15 @@ sub processFiles{
 			if (not (  contains(@types, $tokens[3]) or $typesSize==0)){
 				next;
 			}
+
+			if (not (  ($tokens[5] >= $timesArray[0] and $tokens[5] <= $timesArray[1]) or $times==0)){
+				next;
+			}
+
+			
+
+
+
 			
 
 
