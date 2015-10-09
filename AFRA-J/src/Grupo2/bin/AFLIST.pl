@@ -92,8 +92,13 @@ sub filterRegistersByUmbral{
 
 sub filterRegistersByType{
 	system("clear");
-	print("filterRegistersByType");
+	print("Ingrese los identificadores de los tipos de llamadas separados por una coma (\",\")");
 	$input = <STDIN>;
+	chomp($input);
+	my @types = split /,/, $input;
+	print("tipos de llamada ingresados: @types\n");
+	$input = <STDIN>;
+	return \@types;
 }
 
 sub filterRegistersByTime{
@@ -414,11 +419,15 @@ sub printRegisterFilters{
 	my @centrals = @{$registerFiltersHash{"centrals"}};
 	my @agents = @{$registerFiltersHash{"agents"}};
 	my @umbrals = @{$registerFiltersHash{"umbrals"}};
+	my @types = @{$registerFiltersHash{"types"}};
 
 	print("Filtros Que Se Utilizaran:\n");
 	print("hash{centrals} = @centrals\n");
 	print("hash{agents} = @agents\n");
 	print("hash{umbrals} = @umbrals\n");
+	print("hash{types} = @types\n");
+
+	
 
 	
 
@@ -439,6 +448,11 @@ sub processFiles{
 	my @umbrals = @{$filters{"umbrals"}};
 	my $umbralsSize= scalar @umbrals;
 
+	my @types = @{$filters{"types"}};
+	my $typesSize= scalar @types;
+
+	
+
 	#print("centrals @centrals\n");
 	#print "central size: $centralSize";
 
@@ -450,13 +464,17 @@ sub processFiles{
 			if (not (  contains(@centrals, $tokens[0]) or $centralSize==0)){
 				next;
 			}
-
 			if (not (  contains(@agents, $tokens[1]) or $agentsSize==0)){
 				next;
 			}
 			if (not (  contains(@umbrals, $tokens[2]) or $umbralsSize==0)){
 				next;
 			}
+			if (not (  contains(@types, $tokens[3]) or $typesSize==0)){
+				next;
+			}
+			
+
 
 			print $linea;
 		}
