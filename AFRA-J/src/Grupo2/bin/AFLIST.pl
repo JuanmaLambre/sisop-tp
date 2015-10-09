@@ -70,7 +70,7 @@ sub filterRegistersByCentrals{
 sub filterRegistersByAgents{
 
 	system("clear");
-	print("Ingrese los identificadores de los separados por una coma (\",\")");
+	print("Ingrese los identificadores de los agentes separados por una coma (\",\")");
 	$input = <STDIN>;
 	chomp($input);
 	my @agents = split /,/, $input;
@@ -81,8 +81,13 @@ sub filterRegistersByAgents{
 
 sub filterRegistersByUmbral{
 	system("clear");
-	print("filterRegistersByUmbral");
+	print("Ingrese los identificadores de los umbrales separados por una coma (\",\")");
 	$input = <STDIN>;
+	chomp($input);
+	my @umbral = split /,/, $input;
+	print("umbrales ingresados: @umbral\n");
+	$input = <STDIN>;
+	return \@umbral;
 }
 
 sub filterRegistersByType{
@@ -131,7 +136,7 @@ sub loadRegisterFilters{
 			$registerFiltersHash{"agents"} = filterRegistersByAgents();
 		}
 		if ($filter == 3) {
-			$registerFiltersHash{"unmbrals"} = filterRegistersByUmbral();
+			$registerFiltersHash{"umbrals"} = filterRegistersByUmbral();
 		}
 		if ($filter == 4) {
 			$registerFiltersHash{"types"} = filterRegistersByType();
@@ -408,8 +413,14 @@ sub printRegisterFilters{
 	%registerFiltersHash = @_;
 	my @centrals = @{$registerFiltersHash{"centrals"}};
 	my @agents = @{$registerFiltersHash{"agents"}};
-	print("in main, hash{centrals} = @centrals\n");
-	print("in main, hash{agents} = @agents\n");
+	my @umbrals = @{$registerFiltersHash{"umbrals"}};
+
+	print("Filtros Que Se Utilizaran:\n");
+	print("hash{centrals} = @centrals\n");
+	print("hash{agents} = @agents\n");
+	print("hash{umbrals} = @umbrals\n");
+
+	
 
 	$input = <STDIN>;
 }
@@ -425,6 +436,9 @@ sub processFiles{
 	my @agents = @{$filters{"agents"}};
 	my $agentsSize= scalar @agents;
 
+	my @umbrals = @{$filters{"umbrals"}};
+	my $umbralsSize= scalar @umbrals;
+
 	#print("centrals @centrals\n");
 	#print "central size: $centralSize";
 
@@ -438,6 +452,9 @@ sub processFiles{
 			}
 
 			if (not (  contains(@agents, $tokens[1]) or $agentsSize==0)){
+				next;
+			}
+			if (not (  contains(@umbrals, $tokens[2]) or $umbralsSize==0)){
 				next;
 			}
 
