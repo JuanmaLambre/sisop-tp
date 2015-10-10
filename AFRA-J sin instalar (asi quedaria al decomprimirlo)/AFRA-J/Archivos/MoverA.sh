@@ -42,15 +42,15 @@ fi
 if [ ! -d "$directorio_destino" ]
 then
     echo "El directorio destino \"$directorio_destino\" no existe, no se mueve nada"
-    bash ./GraLog.sh $comando_que_me_invoca "'echo "El directorio destino \"$directorio_destino\" no existe, no se mueve nada"'" "ERR"
+    ./GraLog.sh $comando_que_me_invoca "'echo "El directorio destino \"$directorio_destino\" no existe, no se mueve nada"'" "ERR"
     exit 4
 fi
 
 #Si no es duplicado, lo muevo y salgo
 if [ ! -f "$directorio_destino/$nombre_archivo" ]
 then
-    #mv "$archivo_fuente" "$directorio_destino"
-    cp "$archivo_fuente" "$directorio_destino" #para probar, solamente lo copio
+    mv "$archivo_fuente" "$directorio_destino"
+    #cp "$archivo_fuente" "$directorio_destino" #para probar, solamente lo copio
     exit 0
 fi
 
@@ -63,8 +63,8 @@ fi
 #Si no existe en duplicados, lo copio a duplicados y salgo
 if [ ! -f "$directorio_destino/duplicados/$nombre_archivo" ]
 then
-    #mv "$archivo_fuente" "$directorio_destino/duplicados"
-    cp "$archivo_fuente" "$directorio_destino/duplicados/$nombre_archivo" #para probar, solamente lo copio
+    mv "$archivo_fuente" "$directorio_destino/duplicados"
+    #cp "$archivo_fuente" "$directorio_destino/duplicados/$nombre_archivo" #para probar, solamente lo copio
     exit 0
 fi
 

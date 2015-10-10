@@ -14,7 +14,7 @@ checkMessagType(){
 getRuta(){
 if [ "$1" = "AFINSTAL" ]
 then
-	 echo "$CONFDIR"
+	 echo "$GRUPO/conf"
 	 #echo "logdir"
 else
 	if [ ! -f "$BINDIR/$1" ]
