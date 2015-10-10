@@ -246,6 +246,74 @@ sub loadInputFilesFilters{
 	return %hash;
 }
 
+sub loadCentralsFile{
+	my %hash;
+	my $fileHdl;
+	my $fileName = "../mae/centrales.csv";
+	open ($fileHdl,"<", $fileName) or die "no se puede abrir $fileName: $!";
+	while (my $line=<$fileHdl>){
+		chomp($line);
+		my @tokens = split /;/, $line;
+		$hash{$tokens[0]} = $tokens[1];
+	}
+	close ($fileHdl);
+	return %hash;
+}
+
+sub loadAreasFile{
+	my %hash;
+	my $fileHdl;
+	my $fileName = "../mae/CdP.csv";
+	open ($fileHdl,"<", $fileName) or die "no se puede abrir $fileName: $!";
+	while (my $line=<$fileHdl>){
+		chomp($line);
+		my @tokens = split /;/, $line;
+		my $codInHash = -$tokens[0];
+		$hash{$codInHash} = $tokens[1];
+	}
+	close ($fileHdl);
+
+	my $fileName = "../mae/CdA.csv";
+	open ($fileHdl,"<", $fileName) or die "no se puede abrir $fileName: $!";
+	while (my $line=<$fileHdl>){
+		chomp($line);
+		my @tokens = split /;/, $line;
+		$hash{$tokens[1]} = $tokens[0];
+	}
+	close ($fileHdl);
+	return %hash;	
+}
+
+sub loadOfficesFromAgents{
+	my %hash;
+	my $fileHdl;
+	my $fileName = "../mae/agentes.csv";
+	open ($fileHdl,"<", $fileName) or die "no se puede abrir $fileName: $!";
+	while (my $line=<$fileHdl>){
+		chomp($line);
+		my @tokens = split /;/, $line;
+		my $agent = "$tokens[0] $tokens[1]";
+		$hash{$agent} = $tokens[3];
+	}
+	close ($fileHdl);
+	return %hash;	
+}
+
+sub loadEmails{
+	my %hash;
+	my $fileHdl;
+	my $fileName = "../mae/agentes.csv";
+	open ($fileHdl,"<", $fileName) or die "no se puede abrir $fileName: $!";
+	while (my $line=<$fileHdl>){
+		chomp($line);
+		my @tokens = split /;/, $line;
+		my $agent = "$tokens[0] $tokens[1]";
+		$hash{$agent} = $tokens[4];
+	}
+	close ($fileHdl);
+	return %hash;	
+}
+
 sub main{
 	if ( not(isInitialized) ) {
 		print("No esta realizada la inicializacion de ambiente\n");
@@ -269,46 +337,66 @@ sub main{
 		processFiles(\@inputFiles, \%registerFiltersHash);
 	}
 	if (contains(@ARGV, "-s")) {
+		%centralsById = loadCentralsFile();
+		%areasById = loadAreasFile();
+		%officesByAgents = loadOfficesFromAgents();
+		%emails = loadEmails();
 		%fileFiltersHash = loadInputFilesFilters();
 		@inputFiles = loadInputFiles(%fileFiltersHash);
 		my $fileHdl;
 		my %hashCentralsCalls;
+		my %hashCentralsCallsInSeconds;
 		my %hashOfficesCalls;
+		my %hashOfficesCallsInSeconds;
 		my %hashAgentsCalls;
-		my %hashDestinationsCalls;
+		my %hashAgentsCallsInSeconds;
+		my %hashAreasCalls;
 		my %hashUmbralsCalls;
 		#print("files: @inputFiles\n");
 		#$in = <STDIN>;
 		foreach my $fileName (@inputFiles){
 			my @params = split /_/, $fileName;
 			$office = $params[0];
-			open ($fileHdl,"<", $fileName) or die "no se puede abrir $file: $!";
+			open ($fileHdl,"<", $fileName) or die "no se puede abrir $fileName: $!";
 			while (my $linea=<$fileHdl>) {
 				@tokens = split /;/, $linea;
 				
 				if (exists($hashCentralsCalls{$tokens[0]})){
 					$hashCentralsCalls{$tokens[0]} = $hashCentralsCalls{$tokens[0]} + 1;
+					$hashCentralsCallsInSeconds{$tokens[0]} = $hashCentralsCallsInSeconds{$tokens[0]} + $tokens[5];
 				}else{
 					$hashCentralsCalls{$tokens[0]} = 1;
+					$hashCentralsCallsInSeconds{$tokens[0]} = $tokens[5];
 				}
 				
 				if (exists($hashOfficesCalls{$office})){
 					$hashOfficesCalls{$office} = $hashOfficesCalls{$office} + 1;
+					$hashOfficesCallsInSeconds{$office} = $hashOfficesCallsInSeconds{$office} + $tokens[5];
 				}else{
 					$hashOfficesCalls{$office} = 1;
+					$hashOfficesCallsInSeconds{$office} = $tokens[5];
 				}
 
 				if (exists($hashAgentsCalls{$tokens[1]})){
 					$hashAgentsCalls{$tokens[1]} = $hashAgentsCalls{$tokens[1]} + 1;
+					$hashAgentsCallsInSeconds{$tokens[1]} = $hashAgentsCallsInSeconds{$tokens[1]} + $tokens[5];
 				}else{
 					$hashAgentsCalls{$tokens[1]} = 1;
+					$hashAgentsCallsInSeconds{$tokens[1]} = $tokens[5];
 				}
 
-
-				if (exists($hashDestinationsCalls{$tokens[10]})){
-					$hashDestinationsCalls{$tokens[10]} = $hashDestinationsCalls{$tokens[10]} + 1;
-				}else{
-					$hashDestinationsCalls{$tokens[10]} = 1;
+				if ($tokens[8] == ""){ #si es local
+					if (exists($hashAreasCalls{$tokens[9]})){
+						$hashAreasCalls{$tokens[9]} = $hashAreasCalls{$tokens[9]} + 1;
+					}else{
+						$hashAreasCalls{$tokens[9]} = 1;
+					}
+				}else{	#si es al exterior, va el codigo de pais, pero negativo
+					if (exists($hashAreasCalls{-$tokens[8]})){
+						$hashAreasCalls{-$tokens[8]} = $hashAreasCalls{-$tokens[8]} + 1;
+					}else{
+						$hashAreasCalls{-$tokens[8]} = 1;
+					}
 				}
 
 				if (exists($hashUmbralsCalls{$tokens[2]})){
@@ -324,87 +412,182 @@ sub main{
 		while($querry != '6'){
 
 			if ( $querry == 1 ){
-				#FALTA MOSTRAR DETALLES DE LA CENTRAL, ARMARSE UN HASH CON EL ARCHIVO MAE AL PPIO Y LISTO
-				print("Si desea ver la central con mayor cantidad de llamadas sospechosas, ingrese 1.\nSi desea ver el ranking de centrales, ingrese 2.\n");
+				print("Si desea ver la central mas sospechada, ingrese 1.\nSi desea ver el ranking de centrales, ingrese 2.\n");
 				my $op = <STDIN>;
-				if ($op == 1){
-					foreach my $call (sort { -($hashCentralsCalls{$a} <=> $hashCentralsCalls{$b}) } keys %hashCentralsCalls) { 
-			       		print("Central con mayor cantidad de llamadas sospechosas: $call: $hashCentralsCalls{$call}\n");
-						last;
-	    			}	
-	    		}else{
-	    			if ($op == 2){
-	    				print("Ranking de centrales:\n");
-	    				my $counter = 1;
-						foreach my $call (sort { -($hashCentralsCalls{$a} <=> $hashCentralsCalls{$b}) } keys %hashCentralsCalls) {
-					    	print("$counter: $call ($hashCentralsCalls{$call})\n");
-		    				++$counter;
-		    			}
+				print("Si desea que el ranking se calcule por cantidad de llamadas sospechosas, ingrese 1.\nSi desea que se calcule por acumulacion de tiempo, ingrese 2\n");
+				my $op2 = <STDIN>;
+				if ($op2 == 1){
+					if ($op == 1){
+						foreach my $call (sort { -($hashCentralsCalls{$a} <=> $hashCentralsCalls{$b}) } keys %hashCentralsCalls) { 
+				       		print("Central con mayor cantidad de llamadas sospechosas: $call -> $centralsById{$call} ($hashCentralsCalls{$call} llamadas).\n");
+							last;
+		    			}	
+		    		}else{
+		    			if ($op == 2){
+		    				print("Ranking de centrales:\n");
+		    				my $counter = 1;
+							foreach my $call (sort { -($hashCentralsCalls{$a} <=> $hashCentralsCalls{$b}) } keys %hashCentralsCalls) {
+						    	print("$counter: $call -> $centralsById{$call} ($hashCentralsCalls{$call} llamadas)\n");
+			    				++$counter;
+			    			}
 
+		    			}else{
+		    				print("La opcion ingresada no es valida\n");
+		    			}
+		    		}
+		    	}else{
+		    		if ($op2 == 2){
+			    		if ($op == 1){
+							foreach my $call (sort { -($hashCentralsCallsInSeconds{$a} <=> $hashCentralsCallsInSeconds{$b}) } keys %hashCentralsCallsInSeconds) { 
+					       		print("Central con mayor cantidad de segundos en llamadas sospechosas: $call -> $centralsById{$call} ($hashCentralsCallsInSeconds{$call} segundos).\n");
+								last;
+			    			}	
+			    		}else{
+			    			if ($op == 2){
+			    				print("Ranking de centrales:\n");
+			    				my $counter = 1;
+								foreach my $call (sort { -($hashCentralsCalls{$a} <=> $hashCentralsCalls{$b}) } keys %hashCentralsCalls) {
+							    	print("   $counter: $call -> $centralsById{$call} ($hashCentralsCallsInSeconds{$call} segundos)\n");
+				    				++$counter;
+				    			}
+
+			    			}else{
+			    				print("La opcion ingresada no es valida\n");
+			    			}
+			    		}
 	    			}else{
 	    				print("La opcion ingresada no es valida\n");
 	    			}
-	    		}
+		    	}
 			}
 			if ( $querry == 2 ){
-			    print("Si desea ver la oficina con mayor cantidad de llamadas sospechosas, ingrese 1.\nSi desea ver el ranking de oficinas, ingrese 2.\n");
+			    print("Si desea ver la oficina mas sospechada, ingrese 1.\nSi desea ver el ranking de oficinas, ingrese 2.\n");
 				my $op = <STDIN>;
-				if ($op == 1){
-					foreach my $call (sort { -($hashOfficesCalls{$a} <=> $hashOfficesCalls{$b}) } keys %hashOfficesCalls) { 
-			       		print("Oficina con mayor cantidad de llamadas sospechosas: $call: $hashOfficesCalls{$call}\n");
-						last;
-	    			}	
-	    		}else{
-	    			if ($op == 2){
-	    				print("Ranking de oficinas:\n");
-	    				my $counter = 1;
-						foreach my $call (sort { -($hashOfficesCalls{$a} <=> $hashOfficesCalls{$b}) } keys %hashOfficesCalls) {
-					    	print("$counter: $call ($hashOfficesCalls{$call})\n");
-		    				++$counter;
-		    			}
+				print("Si desea que el ranking se calcule por cantidad de llamadas sospechosas, ingrese 1.\nSi desea que se calcule por acumulacion de tiempo, ingrese 2\n");
+				my $op2 = <STDIN>;
+				if ($op2 == 1){
+					if ($op == 1){
+						foreach my $call (sort { -($hashOfficesCalls{$a} <=> $hashOfficesCalls{$b}) } keys %hashOfficesCalls) { 
+				       		print("Oficina con mayor cantidad de llamadas sospechosas: $call: $hashOfficesCalls{$call}\n");
+							last;
+		    			}	
+		    		}else{
+		    			if ($op == 2){
+		    				print("Ranking de oficinas:\n");
+		    				my $counter = 1;
+							foreach my $call (sort { -($hashOfficesCalls{$a} <=> $hashOfficesCalls{$b}) } keys %hashOfficesCalls) {
+						    	print("$counter: $call ($hashOfficesCalls{$call})\n");
+			    				++$counter;
+			    			}
 
-	    			}else{
-	    				print("La opcion ingresada no es valida\n");
-	    			}
-	    		}
+		    			}else{
+		    				print("La opcion ingresada no es valida\n");
+		    			}
+		    		}
+		    	}else{
+		    		if($op2 == 2){
+		    			if ($op == 1){
+							foreach my $call (sort { -($hashOfficesCallsInSeconds{$a} <=> $hashOfficesCallsInSeconds{$b}) } keys %hashOfficesCallsInSeconds) { 
+					       		print("Oficina con mayor cantidad de segundos en llamadas sospechosas: $call ($hashOfficesCallsInSeconds{$call} segundos)\n");
+								last;
+			    			}	
+			    		}else{
+			    			if ($op == 2){
+			    				print("Ranking de oficinas:\n");
+			    				my $counter = 1;
+								foreach my $call (sort { -($hashOfficesCallsInSeconds{$a} <=> $hashOfficesCallsInSeconds{$b}) } keys %hashOfficesCallsInSeconds) {
+							    	print("$counter: $call ($hashOfficesCallsInSeconds{$call} segundos)\n");
+				    				++$counter;
+				    			}
+
+			    			}else{
+			    				print("La opcion ingresada no es valida\n");
+			    			}
+			    		}
+		    		}else{
+		    			print("La opcion ingresada no es valida\n");
+		    		}
+		    	}
 			}
 			if ( $querry == 3 ){
-				print("Si desea ver al agente con mayor cantidad de llamadas sospechosas, ingrese 1.\nSi desea ver el ranking de agentes, ingrese 2.\n");
+				print("Si desea ver al agente mas sospechado, ingrese 1.\nSi desea ver el ranking de agentes, ingrese 2.\n");
 				my $op = <STDIN>;
-				if ($op == 1){
-					foreach my $call (sort { -($hashAgentsCalls{$a} <=> $hashAgentsCalls{$b}) } keys %hashAgentsCalls) { 
-			       		print("Agente con mayor cantidad de llamadas sospechosas: $call: $hashAgentsCalls{$call}\n");
-						last;
-	    			}	
-	    		}else{
-	    			if ($op == 2){
-	    				print("Ranking de agentes:\n");
-	    				my $counter = 1;
-						foreach my $call (sort { -($hashAgentsCalls{$a} <=> $hashAgentsCalls{$b}) } keys %hashAgentsCalls) {
-					    	print("$counter: $call ($hashAgentsCalls{$call})\n");
-		    				++$counter;
-		    			}
+				print("Si desea que el ranking se calcule por cantidad de llamadas sospechosas, ingrese 1.\nSi desea que se calcule por acumulacion de tiempo, ingrese 2\n");
+				my $op2 = <STDIN>;
+				if ($op2 == 1){
+					if ($op == 1){
+						foreach my $call (sort { -($hashAgentsCalls{$a} <=> $hashAgentsCalls{$b}) } keys %hashAgentsCalls) { 
+				       		my $email = lc $emails{$call};
+				       		print("Agente con mayor cantidad de llamadas sospechosas: $call\n   email: $email\n   oficina: $officesByAgents{$call}\n");
+							last;
+		    			}	
+		    		}else{
+		    			if ($op == 2){
+		    				print("Ranking de agentes:\n");
+		    				my $counter = 1;
+							foreach my $call (sort { -($hashAgentsCalls{$a} <=> $hashAgentsCalls{$b}) } keys %hashAgentsCalls) {
+								my $email = lc $emails{$call};
+						    	print("   $counter: $call ($hashAgentsCalls{$call} llamadas)\n      email: $email\n      oficina: $officesByAgents{$call}\n");
+			    				++$counter;
+			    			}
 
-	    			}else{
-	    				print("La opcion ingresada no es valida\n");
-	    			}
+		    			}else{
+		    				print("La opcion ingresada no es valida\n");
+		    			}
+		    		}
+	    		}else{
+	    			if ($op2 == 2){
+	    				if ($op == 1){
+							foreach my $call (sort { -($hashAgentsCallsInSeconds{$a} <=> $hashAgentsCallsInSeconds{$b}) } keys %hashAgentsCallsInSeconds) { 
+					       		my $email = lc $emails{$call};
+					       		print("Agente con mayor cantidad de segundos en llamadas sospechosas: $call\n   email: $email\n   oficina: $officesByAgents{$call}\n");
+								last;
+			    			}	
+			    		}else{
+			    			if ($op == 2){
+			    				print("Ranking de agentes:\n");
+			    				my $counter = 1;
+								foreach my $call (sort { -($hashAgentsCallsInSeconds{$a} <=> $hashAgentsCallsInSeconds{$b}) } keys %hashAgentsCallsInSeconds) {
+									my $email = lc $emails{$call};
+							    	print("   $counter: $call ($hashAgentsCallsInSeconds{$call} segundos)\n      email: $email\n      oficina: $officesByAgents{$call}\n");
+				    				++$counter;
+				    			}
+
+			    			}else{
+			    				print("La opcion ingresada no es valida\n");
+			    			}
+			    		}
+    				}else{
+	    				print("La opcion ingresada no es valida\n");	
+    				}
 	    		}
 			}
 			if ( $querry == 4 ){
 				print("Si desea ver el destino con mayor cantidad de llamadas sospechosas, ingrese 1.\nSi desea ver el ranking de destinos, ingrese 2.\n");
 				my $op = <STDIN>;
 				if ($op == 1){
-					foreach my $call (sort { -($hashDestinationsCalls{$a} <=> $hashDestinationsCalls{$b}) } keys %hashDestinationsCalls) { 
-			       		print("Destino con mayor cantidad de llamadas sospechosas: $call: $hashDestinationsCalls{$call}\n");
+					foreach my $call (sort { -($hashAreasCalls{$a} <=> $hashAreasCalls{$b}) } keys %hashAreasCalls) {
+						my $destination;
+						if ($call < 0){ #llamada al exterior
+							$destination = -$call;
+						}else{
+							$destination = $call;
+						}
+						print("El destino con mayor cantidad de llamadas sospechosas es $destination -> $areasById{$call}\n");
 						last;
 	    			}	
 	    		}else{
 	    			if ($op == 2){
 	    				print("Ranking de destinos:\n");
 	    				my $counter = 1;
-						foreach my $call (sort { -($hashDestinationsCalls{$a} <=> $hashDestinationsCalls{$b}) } keys %hashDestinationsCalls) {
-					    	print("$counter: $call ($hashDestinationsCalls{$call})\n");
-		    				++$counter;
+						foreach my $call (sort { -($hashAreasCalls{$a} <=> $hashAreasCalls{$b}) } keys %hashAreasCalls) {
+					    	if ($call < 0){ #llamada al exterior
+					    		$destination = -$call;
+							}else{
+								$destination = $call;
+							}
+							print("   $counter: $destination -> $areasById{$call}\n");
+	    					++$counter;
 		    			}
 
 	    			}else{
@@ -417,7 +600,7 @@ sub main{
 				my $counter = 1;
 			    foreach my $call (sort { -($hashUmbralsCalls{$a} <=> $hashUmbralsCalls{$b}) } keys %hashUmbralsCalls) { 
 		       		if ($hashUmbralsCalls{$call} > 1){
-		       			print("$counter: $call ($hashUmbralsCalls{$call})");	
+		       			print("   $counter: $call ($hashUmbralsCalls{$call} llamadas)\n");	
 		       		}
 		       		++$counter;
     			}
