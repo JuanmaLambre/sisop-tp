@@ -17,8 +17,8 @@ sub isInitialized{
 
 sub isAlreadyRunning{
 	$counter = `ps -a | grep -c 'AFLIST'`;
-	$counterIfIsNotRunning = 2; #Linux
-	#$counterIfIsNotRunning = 3; #MAC
+	#$counterIfIsNotRunning = 2; #Linux
+	$counterIfIsNotRunning = 3; #MAC
 	if($counter > $counterIfIsNotRunning){
 		return 1;
 	}else{
@@ -120,8 +120,14 @@ sub filterRegistersByTime{
 
 sub filterRegistersByNumber{
 	system("clear");
-	print("filterRegistersByNumber");
+	print("Ingrese los numeros con Codigo de Area y luego el numero separado por un (\"-\") y los distintos numeros por (\",\")");
+	print("\tPor ejemplo: \"11-43432211,299-47933716\" representa area 11 numero 43432211\n");
 	$input = <STDIN>;
+	chomp($input);
+	my @numbers = split /,/, $input;
+	print("numeros ingresados: @numbers\n");
+	$input = <STDIN>;
+	return \@numbers;
 }
 
 
@@ -617,8 +623,10 @@ sub printRegisterFilters{
 	my @centrals = @{$registerFiltersHash{"centrals"}};
 	my @agents = @{$registerFiltersHash{"agents"}};
 	my @umbrals = @{$registerFiltersHash{"umbrals"}};
-	my @types = @{$registerFiltersHash{"types"}};
 	my $times = ${$registerFiltersHash{"times"}};
+
+	my @numbers = @{$registerFiltersHash{"numbers"}};
+
 
 
 
@@ -628,6 +636,7 @@ sub printRegisterFilters{
 	print("hash{umbrals} = @umbrals\n");
 	print("hash{types} = @types\n");
 	print("hash{times} = $times\n");
+	print("hash{numbers} = @numbers\n");
 
 
 
@@ -658,6 +667,9 @@ sub processFiles{
 
 	my $times = ${$filters{"times"}};
 	my @timesArray = split /-/, $times;
+
+	my @numbers = @{$filters{"numbers"}};
+	my $numbersSize= scalar @numbers;
 
 
 	#print "times: $times";
@@ -692,7 +704,11 @@ sub processFiles{
 				next;
 			}
 
-			
+			my $areaYNumero = "$tokens[6]-$tokens[7]";
+
+			if (not (  contains(@numbers, $areaYNumero) or $numbersSize==0)){
+				next;
+			}
 
 
 
