@@ -2,13 +2,16 @@
 
 function grabar_en_el_log {
 
-	echo "$1" >> logAFUMB.txt
+	#echo "$1" >> logAFUMB.txt
+	#${BINDIR}GraLog.sh "AFUMB.sh" "$1" "INFO" 
+	${BINDIR}GraLog.sh "AFUMB" "$1" "INFO"
 
 }
 
 function mover_archivo {
 
-	echo "Se mueve el archivo $1 a la carpeta $2" >> logAFUMB.txt
+	#echo "Se mueve el archivo $1 a la carpeta $2" >> logAFUMB.txt
+	${BINDIR}MoverA.sh $1 $2
 }
 
 
@@ -197,13 +200,16 @@ function validar_numero_B {
 
 
 
-#ACEPDIR
-#PROCDIR
-#RECHDIR
+#ACEPDIR=acep/
+#PROCDIR=proc/
+#RECHDIR=rech/
+#MAEDIR=mae
+#BINDIR=./
 
-Archivo_agentes=$MAEDIR/agentes.mae
-Archivo_areas=$MAEDIR/CdA.mae
-Archivo_paises=$MAEDIR/CdP.mae
+
+Archivo_agentes=$MAEDIR/agentes.csv
+Archivo_areas=$MAEDIR/CdA.csv
+Archivo_paises=$MAEDIR/CdP.csv
 Archivo_umbrales=$MAEDIR/umbrales.csv #en el enunciado dice MAEDIR/umbral.tab pero el archivo que nos pasaron se llama umbrales.csv
 
 ID_Agentes=$(cut -d ";" -f 3 $Archivo_agentes)
@@ -232,7 +238,7 @@ Cantidad_archivos_rechazadas=0
 for Archivo_llamadas in $Lista_archivos
 do
 	#2.1 Verificar que no sea un archivo duplicado
-	if [ -f "$PROCDIR$Archivo_llamadas" ]; then				
+	if [ -f "${PROCDIR}proc/$Archivo_llamadas" ]; then				
 		grabar_en_el_log "Se rechaza el archivo $Archivo_llamadas por estar DUPLICADO"
 		mover_archivo  $ACEPDIR$Archivo_llamadas $RECHDIR
 		((Cantidad_archivos_rechazadas++))
@@ -288,7 +294,7 @@ do
 			mover_archivo $Archivo_llamadas_path ${PROCDIR}proc
 		
 			grabar_en_el_log "Cantidad de llamadas = $Cantidad_llamadas: Rechazadas $Cantidad_llamadas_rechazadas, Con umbral = $Cantidad_llamadas_con_umbral, Sin umbral $((Cantidad_llamadas-Cantidad_llamadas_con_umbral-Cantidad_llamadas_rechazadas))"
-			grabar_en_el_log "Cantidad de llamdas sospechosas $Cantidad_llamadas_sospechosas, no sospechosas $((Cantidad_llamadas_con_umbral-Cantidad_llamadas_sospechosas))"
+			grabar_en_el_log "Cantidad de llamadas sospechosas $Cantidad_llamadas_sospechosas, no sospechosas $((Cantidad_llamadas_con_umbral-Cantidad_llamadas_sospechosas))"
 		fi
 	fi
 	#8. Continuar con el siguiente archivo
