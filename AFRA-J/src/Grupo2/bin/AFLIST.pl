@@ -179,32 +179,37 @@ sub loadInputFiles{
 	%h = @_;
 	$range = $h{"range"};
 	@offices = @{$h{"offices"}};
+	$opFiles = $h{"typeOfFiles"};
 	$numberOfOffices = @offices;
 	#print("num = $numberOfOffices\n");
 	#print("offices: @offices\n");
 	#print("range: $range\n");
 	@list;
-	$dirname = "../PROCDIR";
-	opendir ( DIR, $dirname );
-	while( $filename = readdir(DIR)){
-		if ($filename =~ /[^_]_[0-9]{6}/){
-			@params = split /_/, $filename;
-			@dates = split /-/, $range;
-			if ($params[1] >= $dates[0] and $params[1] <= $dates[1]){
-				if (($numberOfOffices == 0) or (contains(@offices, $params[0]))) {
-					push(@list, "../PROCDIR/$filename");
-				}
+	if($opFiles == 2){
+		$dirname = "../PROCDIR";
+		opendir ( DIR, $dirname );
+		while( $filename = readdir(DIR)){
+			if ($filename =~ /[^_]_[0-9]{6}/){
+				@params = split /_/, $filename;
+				@dates = split /-/, $range;
+				if ($params[1] >= $dates[0] and $params[1] <= $dates[1]){
+					if (($numberOfOffices == 0) or (contains(@offices, $params[0]))) {
+						push(@list, "../PROCDIR/$filename");
+					}
 
-				
+					
+				}
 			}
 		}
+		closedir(DIR);
 	}
-	closedir(DIR);
-	$dirname = "../REPODIR";
-	opendir ( DIR, $dirname );
-	while( $filename = readdir(DIR)){
-		if ($filename =~ /subllamadas\.[0-9]{3}/){
-				push(@list, "../REPODIR/$filename");
+	if($opFiles == 1){
+		$dirname = "../REPODIR";
+		opendir ( DIR, $dirname );
+		while( $filename = readdir(DIR)){
+			if ($filename =~ /subllamadas\.[0-9]{3}/){
+					push(@list, "../REPODIR/$filename");
+			}
 		}
 	}
 	closedir(DIR);
@@ -221,6 +226,15 @@ sub isRangeCallTime{
 
 sub loadInputFilesFilters{
 	system("clear");
+	
+	print("Si desea que los archivos de entrada sean los filtrados con anterioridad por AFLIST, ingrese 1\nSi desea tomar los creados en los comandos anteriores Ingrese 2\n");
+	$opFiles = <STDIN>;
+	 
+	while($opFiles != 1 and $opFiles != 2){
+		print("Por favor, ingrese una opcion valida: ");
+		$opFiles = <STDIN>;
+	}
+	
 	print("Debe ingresar un rango de fechas para los archivos de entrada\n\tcon el formato AAAAMM-AAAAMM.\n");
 	print("\tPor ejemplo: \"201501-201512\" representa todo el 2015\n");
 	$range = "";
@@ -243,6 +257,7 @@ sub loadInputFilesFilters{
 	%hash;
 	$hash{"range"} = $range;
 	$hash{"offices"} = \@offices;
+	$hash{"typeOfFiles"} = $opFiles;	
  	
  	#$offices2 = $hash{"offices"};
  	#print("offices2: $offices2->[0]\n");
@@ -362,11 +377,17 @@ sub main{
 		#$in = <STDIN>;
 		foreach my $fileName (@inputFiles){
 			my @params = split /_/, $fileName;
-			$office = $params[0];
+			my @path = split /\//, $params[0];
+			$office = pop(@path);
 			open ($fileHdl,"<", $fileName) or die "no se puede abrir $fileName: $!";
 			while (my $linea=<$fileHdl>) {
 				@tokens = split /;/, $linea;
-				
+				my $numberOfTokens = scalar @tokens;
+				if($numberOfTokens > 12){
+					$office = $tokens[12];
+				}
+
+
 				if (exists($hashCentralsCalls{$tokens[0]})){
 					$hashCentralsCalls{$tokens[0]} = $hashCentralsCalls{$tokens[0]} + 1;
 					$hashCentralsCallsInSeconds{$tokens[0]} = $hashCentralsCallsInSeconds{$tokens[0]} + $tokens[5];
@@ -686,6 +707,7 @@ sub processFiles{
 	foreach my $file (@files){
 		open ($fileHdl,"<", $file) or die "no se puede abrir $file: $!";
 		while (my $linea=<$fileHdl>) {
+			chomp($linea);
 			@tokens = split /;/, $linea;
 			if (not (  contains(@centrals, $tokens[0]) or $centralSize==0)){
 				next;
@@ -712,10 +734,15 @@ sub processFiles{
 
 
 
-			
-
-
-			print $linea;
+			my $numberOfTokens = scalar @tokens;
+			if($numberOfTokens > 12){ #ya tiene oficina
+				print "$linea\n";
+			}else{ #append oficina
+				my @params = split /_/, $file;
+				my @path = split /\//, $params[0];
+				my $office = pop(@path);
+				print "$linea;$office\n";
+			}
 		}
 		close ($fileHdl);
 	}
