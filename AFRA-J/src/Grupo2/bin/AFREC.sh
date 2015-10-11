@@ -6,9 +6,21 @@
 # FALTA CAMBIAR EL mv POR EL MoverA
 # FALTA CAMBIAR LOS echo POR EL GraLog
 
-RECHAZADOS=$(pwd)/rech
-ACEPTADOS=$(pwd)/acep
-NOVEDADES=$(pwd)/noved
+RECHAZADOS=$RECHDIR
+ACEPTADOS=$ACEPDIR
+NOVEDADES=$NOVEDIR
+
+# DEBERIA SER CORRIDO EN BACKGROUND YA QUE ES UN DAEMON
+TIEMPO_SLEEP_SEGUNDOS="1"
+# Mensajes
+MENSAJE_ARCHIVO_ACEPTADO="Archivo $NOMBRE_ARCHIVO aceptado, movido a $PATH_ACEPTADO"
+MENSAJE_TIPO_INVALIDO="Tipo de archivo invalido"
+MENSAJE_FECHA_INVALIDA="Fecha invalida"
+MENSAJE_FECHA_FUERA_DE_RANGO="Fecha fuera de rango"
+MENSAJE_CENTRAL_INEXISTENTE="Central inexistente"
+MENSAJE_ERROR_DESCONOCIDO="Error desconocido"
+MENSAJE_AFUMB_INICIADO="AFUMB corriendo bajo el no.: $PID"
+MENSAJE_AFUMB_OCUPADO="Invocacion de AFUMB pospuesta para el siguiente ciclo"
 
 # Devuelve en la variable cantidad_archivos
 # la cantidad en el directorio
@@ -22,16 +34,18 @@ function hay_archivos() {
 function validar_tipo_archivos (){
 	for archivo in $(ls -1 "$NOVEDADES");do
 		if [ $(file "$NOVEDADES/$archivo" | grep -c "text") = 0 ];then
-      mv "$NOVEDADES/$archivo" $RECHAZADOS
+      $GRALOG "AFREC" "$MENSAJE_TIPO_INVALIDO" INFO
+      "$BINDIR/MoverA.sh" "$NOVEDADES/$file" "$RECHAZADOS"
+     # mv "$NOVEDADES/$archivo" $RECHAZADOS
 			#Escribir log
-			echo "$archivo no es de texto"
+			#echo "$archivo no es de texto"
 		fi
 	done
 }
 
 #Guarda los codigos de centrales en el array COD_CENTRALES
 function obtener_codigos_centrales() {
- COD_CENTRALES=($(cat centrales.csv | cut -d \; -f 1))
+ COD_CENTRALES=($(cat "$MAEDIR/CdC.mae" | cut -d \; -f 1))
  # for codigo in $codigos;do
  #    COD_CENTRALES[$codigo]=1
  # done
@@ -42,14 +56,38 @@ function validar_codigo_central() {
   case "${COD_CENTRALES[@]}" in
       *"$codigo_a_validar"*)
         #Si el codigo es invalido sigo
-        echo "Codigo Valido!"
+        #echo "Codigo Valido!"
+        continue
       ;;
       *)
         # Si el codigo es invalido lo muevo a rechazados
-        mv "$NOVEDADES/$file" "$RECHAZADOS"
-        $resultado=1
+        $GRALOG "AFREC" "$MENSAJE_CENTRAL_INEXISTENTE" INFO
+        "$BINDIR/MoverA.sh" "$NOVEDADES/$file" "$RECHAZADOS"
+        #mv "$NOVEDADES/$file" "$RECHAZADOS"
+        let "resultado = 1"
       ;;
   esac
+}
+
+# Chequea si el anio a validar es bisiesto
+function bisiesto() {
+ YEAR=$1
+ rem1=$((YEAR%4))
+ rem2=$((YEAR%100))
+ rem3=$((YEAR%400))
+ let "es_bisiesto = 0"
+
+ if [ ${rem2} = "0" -a ${rem3} != "0" ]
+ then
+        let "es_bisiesto = 1"
+ fi
+
+ if [ ${rem1} = "0" -a ${rem2} != "0" ]
+ then
+        let "es_bisiesto = 0"
+ else
+        let "es_bisiesto = 1"
+ fi
 }
 
 # Chequea que la fecha sea valida
@@ -62,27 +100,53 @@ function validar_fecha() {
   dia_a_validar=$(echo ${fecha_a_validar} | cut -c7-8)
 
   if [ $anio_a_validar -lt "1900" -o $anio_a_validar -gt `date +'%Y'` ]; then
-    echo "Anio invalido"
-    mv "$NOVEDADES/$file" "$RECHAZADOS"
+    #echo "Anio invalido"
+    $GRALOG "AFREC" "$MENSAJE_FECHA_INVALIDA" INFO
+    "$BINDIR/MoverA.sh" "$NOVEDADES/$file" "$RECHAZADOS"
+    #mv "$NOVEDADES/$file" "$RECHAZADOS"
     let "resultado = 1"
   else
-    echo "Anio valido"
+    #echo "Anio valido"
+    continue
   fi
 
   if [ $mes_a_validar -lt "01" -o $mes_a_validar -gt "12" ]; then
-    echo "Mes invalido"
-    mv "$NOVEDADES/$file" "$RECHAZADOS"
+    #echo "Mes invalido"
+    $GRALOG "AFREC" "$MENSAJE_FECHA_INVALIDA" INFO
+    "$BINDIR/MoverA.sh" "$NOVEDADES/$file" "$RECHAZADOS"
+    #mv "$NOVEDADES/$file" "$RECHAZADOS"
     let "resultado = 1"
   else
-    echo "Mes valido"
+    #echo "Mes valido"
+    continue
   fi
 
   if [ $dia_a_validar -lt "01" -o $dia_a_validar -gt "31" ]; then
-    echo "Dia invalido"
-    mv "$NOVEDADES/$file" "$RECHAZADOS"
+    #echo "Dia invalido"
+    $GRALOG "AFREC" "$MENSAJE_FECHA_INVALIDA" INFO
+    "$BINDIR/MoverA.sh" "$NOVEDADES/$file" "$RECHAZADOS"
+    #mv "$NOVEDADES/$file" "$RECHAZADOS"
     let "resultado = 1"
   else
-    echo "Dia valido"
+   if [ $mes_a_validar -eq "02" ]; then
+    if [ $dia_a_validar -gt "29" ]; then
+     #echo "Dia invalido"
+     $GRALOG "AFREC" "$MENSAJE_FECHA_INVALIDA" INFO
+     "$BINDIR/MoverA.sh" "$NOVEDADES/$file" "$RECHAZADOS"
+     #mv "$NOVEDADES/$file" "$RECHAZADOS"
+     let "resultado = 1"
+    else
+     bisiesto $anio_a_validar
+     if [ $dia_a_validar -gt "28" -a $es_bisiesto -eq "1" ]; then
+      #echo "Dia invalido"
+      $GRALOG "AFREC" "$MENSAJE_FECHA_INVALIDA" INFO
+      "$BINDIR/MoverA.sh" "$NOVEDADES/$file" "$RECHAZADOS"
+      #mv "$NOVEDADES/$file" "$RECHAZADOS"
+      let "resultado = 1"
+     fi
+    fi
+   fi
+    #echo "Dia valido"
   fi
 }
 
@@ -94,9 +158,12 @@ function validar_antiguedad() {
   if [ $antiguedad -lt "0" ]; then
     echo "Archivo viejo"
     let "resultado = 1"
-    mv "$NOVEDADES/$file" "$RECHAZADOS"
+    $GRALOG "AFREC" "$MENSAJE_FECHA_FUERA_DE_RANGO" INFO
+    #mv "$NOVEDADES/$file" "$RECHAZADOS"
+    "$BINDIR/MoverA.sh" "$NOVEDADES/$file" "$RECHAZADOS"
   else
-    echo "antiguedad ok"
+    #echo "antiguedad ok"
+    continue
   fi
 }
 
@@ -107,43 +174,33 @@ function validar_menor_o_igual_a_hoy() {
   dia_actual=$(date +'%d')
 
   if [ $anio_a_validar -le $anio_actual ]; then
-    echo "Anio ok"
+    #echo "Anio ok"
+    continue
   else
     if [ $mes_a_validar -le $mes_actual ]; then
-      echo "Mes ok"
+      #echo "Mes ok"
+      continue
     else
       if [ $dia_a_validar -le $dia_actual ]; then
-        echo "Dia ok"
+        #echo "Dia ok"
+        continue
       else
         let "resultado = 1"
-        mv "$NOVEDADES/$file" "$RECHAZADOS"
+        $GRALOG "AFREC" "$MENSAJE_FECHA_INVALIDA" INFO
+        "$BINDIR/MoverA.sh" "$NOVEDADES/$file" "$RECHAZADOS"
+        #mv "$NOVEDADES/$file" "$RECHAZADOS"
       fi
     fi
   fi
 
 }
 
-
-# DEBERIA SER CORRIDO EN BACKGROUND YA QUE ES UN DAEMON
-TIEMPO_SLEEP_SEGUNDOS="1"
-# Mensajes
-MENSAJE_NUMERO_CICLO="AFREC ciclo nro. $NUMERO_CICLO"
-MENSAJE_ARCHIVO_ACEPTADO="Archivo $NOMBRE_ARCHIVO aceptado, movido a $PATH_ACEPTADO"
-MENSAJE_TIPO_INVALIDO="Tipo de archivo invalido"
-MENSAJE_FECHA_INVALIDA="Fecha invalida"
-MENSAJE_FECHA_FUERA_DE_RANGO="Fecha fuera de rango"
-MENSAJE_CENTRAL_INEXISTENTE="Central inexistente"
-MENSAJE_ERROR_DESCONOCIDO="Error desconocido"
-MENSAJE_AFUMB_INICIADO="AFUMB corriendo bajo el no.: $PID"
-MENSAJE_AFUMB_OCUPADO="Invocacion de AFUMB pospuesta para el siguiente ciclo"
-
 # BEGIN
 let "NUMERO_CICLO = 0"
-#while true; do
-  #archivo_centrales="$1"
-  #directorio_novedades="$2"
+while true; do
   MENSAJE_NUMERO_CICLO="AFREC ciclo nro. $NUMERO_CICLO"
-  echo $MENSAJE_NUMERO_CICLO
+  #echo $MENSAJE_NUMERO_CICLO
+  $GRALOG "AFREC" "$MENSAJE_NUMERO_CICLO" INFO
   #./GraLog.sh $MENSAJE_NUMERO_CICLO
   let "NUMERO_CICLO = NUMERO_CICLO + 1"
 
@@ -180,29 +237,30 @@ let "NUMERO_CICLO = 0"
       fi
 
       #### SI LLEGO HASTA ACA MOVER A ACEPTADOS
-      mv "$NOVEDADES/$file" "$ACEPTADOS"
+      if [ $resultado -eq "0" ]; then
+       echo "$file aceptado"
+       $GRALOG "AFREC" "Archivo $file aceptado, movido a $ACEPTADOS" INFO
+       #mv "$NOVEDADES/$file" "$ACEPTADOS"
+       "$BINDIR/MoverA.sh" "$NOVEDADES/$file" "$ACEPTADOS"
+      fi
     done
 
   fi
 
+  hay_archivos $NOVEDADES
   if [ $cantidad_archivos -eq 0 ];then
     for file in $(ls -1 "$ACEPTADOS");do
       echo $(ls -1 "$ACEPTADOS")
-      cantidad=`hay_archivos $ACEPTADOS`
-      if [ $cantidad -gt 0 ];then
-        ProcesosCorriendo=$(ps ax | grep -v $$ | grep -v "grep" | grep -v "gedit" | grep "AFUMB.sh")
-        PID=$(echo "$ProcesosCorriendo" | sed 's-\(^ *\)\([0-9]*\)\(.*$\)-\2-g')
+      hay_archivos $ACEPTADOS
+      if [ $cantidad_archivos -gt 0 ];then
+        PID=$(pgrep "AFUMB.sh")
         if [ "$PID" = "" ]; then
-          #Arrancar.sh AFUMB.sh
-          echo "ARRANCA AFUMB!"
-          ProcesosCorriendo=$(ps ax | grep -v $$ | grep -v "grep" | grep -v "gedit" | grep "AFUMB.sh")
-          PID=$(echo "$ProcesosCorriendo" | sed 's-\(^ *\)\([0-9]*\)\(.*$\)-\2-g')
+          "$BINDIR/Arrancar.sh" AFUMB.sh
+          $PID=$(pgrep "AFUMB.sh")
+          $GRALOG "AFREC" "AFUMB corriendo bajo el no.: $PID" INFO
         else
-          #GraLog.sh "AFREC" "$MENSAJE_AFUMB_OCUPADO" INFO
-          echo "AFUMB OCUPADO"
+          $GRALOG "AFREC" "$MENSAJE_AFUMB_OCUPADO" WAR
         fi
-        #Glog.sh "AFREC" "$MENSAJE_AFUMB_INICIADO" INFO
-        echo "ARRANCA AFUMB"
         break
       fi
     done
@@ -210,49 +268,4 @@ let "NUMERO_CICLO = 0"
 
 
 sleep "$TIEMPO_SLEEP_SEGUNDOS"
-
-
-#done
-# Recibe 2 argumentos, MAEDIR/CdC.mae y el directorio NOVEDIR
-
-# Grabar con el GraLog el numero de ciclo
-
-# Recorre la carpeta NOVEDIR en busca de archivos
-
-# Si hay archivos agarrar uno y chequear que sea .txt
-
-# Chequear si tiene el nombre valido <cod_central>_<aniomesdia> sino lo mando a RECHDIR
-
-# El nombre para ser valido debe:
-
-#       COD_CENTRAL estar dentro de CdC.mae
-
-#       ANIOMESDIA debe ser una fecha valida
-
-#       ANIOMESDIA debe ser a lo sumo de un anio de antiguedad
-
-#       ANIOMESDIA debe ser menor o igual a la fecha del dia
-
-# Si el archivo es valido:
-
-#       Mover con el MoverA a ACEPDIR
-
-#       Grabar en el log el mensaje de archivo aceptado con el nombre y el path
-
-# Si el archivo no es valido, esta vacio o no es un .txt rechazarlo:
-
-#       Moverlo a RECHDIR
-
-#       Grabar en el log el nombre y el motivo (tipo invalido, fecha invalida,
-
-#                                               fecha outofrange, central no existe, otros)
-
-# Cuando no hay mas archivos en NOVEDIR, ver si hay en ACEPDIR y llamar a AFUMB si no esta corriendo
-
-# Si se pudo invocar a AFUMB grabar en el log (ver mensaje en pdf)
-
-# Si AFUMB esta ocupado continuar y grabar en el log que se pospuso
-
-# Si se da algun error loguearlo
-
-# Dormir x cantidad de tiempo y volver a empezar
+done
