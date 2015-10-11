@@ -47,9 +47,34 @@ function validar_codigo_central() {
       *)
         # Si el codigo es invalido lo muevo a rechazados
         mv "$NOVEDADES/$file" "$RECHAZADOS"
-        $resultado=1
+        let "resultado = 1"
       ;;
   esac
+}
+
+# Chequea si el anio a validar es bisiesto
+function bisiesto() {
+ YEAR=$1
+ echo "Voy a ver si $YEAR es bisiesto"
+ rem1=$((YEAR%4))
+ rem2=$((YEAR%100))
+ rem3=$((YEAR%400))
+ let "es_bisiesto = 0"
+
+ if [ ${rem2} = "0" -a ${rem3} != "0" ]
+ then
+        echo "NO ES BISIESTO"
+        let "es_bisiesto = 1"
+ fi
+
+ if [ ${rem1} = "0" -a ${rem2} != "0" ]
+ then
+        echo "ES BISIESTO"
+        let "es_bisiesto = 0"
+ else
+        echo "NO ES BISIESTO"
+        let "es_bisiesto = 1"
+ fi
 }
 
 # Chequea que la fecha sea valida
@@ -82,6 +107,26 @@ function validar_fecha() {
     mv "$NOVEDADES/$file" "$RECHAZADOS"
     let "resultado = 1"
   else
+   if [ $mes_a_validar -eq "02" ]; then
+    if [ $dia_a_validar -gt "29" ]; then
+     echo "Dia invalido"
+     mv "$NOVEDADES/$file" "$RECHAZADOS"
+     let "resultado = 1"
+    else
+     bisiesto $anio_a_validar
+     if [ $es_bisiesto -eq "0" ]; then
+      echo "ES BISIESTO"
+     fi
+     if [ $es_bisiesto -eq "1" ]; then
+      echo "NO ES BISIESTO"
+     fi
+     if [ $dia_a_validar -gt "28" -a $es_bisiesto -eq "1" ]; then
+      echo "Dia invalido"
+      mv "$NOVEDADES/$file" "$RECHAZADOS"
+      let "resultado = 1"
+     fi
+    fi
+   fi
     echo "Dia valido"
   fi
 }
@@ -157,6 +202,7 @@ let "NUMERO_CICLO = 0"
 
       # Si resultado llega a ser distinto de 0 es porque alguna validacion fallo
       let "resultado = 0"
+      echo "$file"
 
       if [ $resultado -eq "0" ]; then
       # Valido codigo centrales
@@ -180,29 +226,29 @@ let "NUMERO_CICLO = 0"
       fi
 
       #### SI LLEGO HASTA ACA MOVER A ACEPTADOS
-      mv "$NOVEDADES/$file" "$ACEPTADOS"
+      if [ $resultado -eq "0" ]; then
+       echo "$file aceptado"
+       mv "$NOVEDADES/$file" "$ACEPTADOS"
+      fi
     done
 
   fi
 
+  hay_archivos $NOVEDADES
   if [ $cantidad_archivos -eq 0 ];then
     for file in $(ls -1 "$ACEPTADOS");do
       echo $(ls -1 "$ACEPTADOS")
-      cantidad=`hay_archivos $ACEPTADOS`
-      if [ $cantidad -gt 0 ];then
-        ProcesosCorriendo=$(ps ax | grep -v $$ | grep -v "grep" | grep -v "gedit" | grep "AFUMB.sh")
-        PID=$(echo "$ProcesosCorriendo" | sed 's-\(^ *\)\([0-9]*\)\(.*$\)-\2-g')
+      hay_archivos $ACEPTADOS
+      if [ $cantidad_archivos -gt 0 ];then
+        PID=$(pgrep "AFUMB.sh")
         if [ "$PID" = "" ]; then
           #Arrancar.sh AFUMB.sh
           echo "ARRANCA AFUMB!"
-          ProcesosCorriendo=$(ps ax | grep -v $$ | grep -v "grep" | grep -v "gedit" | grep "AFUMB.sh")
-          PID=$(echo "$ProcesosCorriendo" | sed 's-\(^ *\)\([0-9]*\)\(.*$\)-\2-g')
+          #Glog.sh "AFREC" "$MENSAJE_AFUMB_INICIADO" INFO
         else
           #GraLog.sh "AFREC" "$MENSAJE_AFUMB_OCUPADO" INFO
           echo "AFUMB OCUPADO"
         fi
-        #Glog.sh "AFREC" "$MENSAJE_AFUMB_INICIADO" INFO
-        echo "ARRANCA AFUMB"
         break
       fi
     done
@@ -213,46 +259,3 @@ sleep "$TIEMPO_SLEEP_SEGUNDOS"
 
 
 #done
-# Recibe 2 argumentos, MAEDIR/CdC.mae y el directorio NOVEDIR
-
-# Grabar con el GraLog el numero de ciclo
-
-# Recorre la carpeta NOVEDIR en busca de archivos
-
-# Si hay archivos agarrar uno y chequear que sea .txt
-
-# Chequear si tiene el nombre valido <cod_central>_<aniomesdia> sino lo mando a RECHDIR
-
-# El nombre para ser valido debe:
-
-#       COD_CENTRAL estar dentro de CdC.mae
-
-#       ANIOMESDIA debe ser una fecha valida
-
-#       ANIOMESDIA debe ser a lo sumo de un anio de antiguedad
-
-#       ANIOMESDIA debe ser menor o igual a la fecha del dia
-
-# Si el archivo es valido:
-
-#       Mover con el MoverA a ACEPDIR
-
-#       Grabar en el log el mensaje de archivo aceptado con el nombre y el path
-
-# Si el archivo no es valido, esta vacio o no es un .txt rechazarlo:
-
-#       Moverlo a RECHDIR
-
-#       Grabar en el log el nombre y el motivo (tipo invalido, fecha invalida,
-
-#                                               fecha outofrange, central no existe, otros)
-
-# Cuando no hay mas archivos en NOVEDIR, ver si hay en ACEPDIR y llamar a AFUMB si no esta corriendo
-
-# Si se pudo invocar a AFUMB grabar en el log (ver mensaje en pdf)
-
-# Si AFUMB esta ocupado continuar y grabar en el log que se pospuso
-
-# Si se da algun error loguearlo
-
-# Dormir x cantidad de tiempo y volver a empezar
