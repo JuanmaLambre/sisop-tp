@@ -7,7 +7,12 @@ ERR_ARCHIVOS_FALTANTES=3
 ERR_PERMISOS_DENEGADOS=4
 
 # Seteo algunas variables predeterminadas
-GRUPO="../"
+# Obtengo la ruta del Grupo
+GRUPO="Grupo2/"
+while [ ! -d $GRUPO ]
+do
+    GRUPO="../$GRUPO"
+done
 CONFDIR="$GRUPO/conf"
 AFINSTALCONF="$CONFDIR/AFINSTAL.cnfg"
 GRALOG="GraLog.sh"
