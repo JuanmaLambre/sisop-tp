@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+
 #TODO: llevar esto a otro .pl
 sub contains{
 	$value=pop(@_);
@@ -34,9 +35,7 @@ sub isAlreadyRunning{
 
 }
 
-sub showHelp{
-	print("ayuda");
-}
+
 
 sub showStatisticsMenu{
 	system("clear");
@@ -194,6 +193,8 @@ sub loadInputFiles{
 	@list;
 	if($opFiles == 2){
 		$dirname = "$PROCDIR";
+	#	$dirname = "../PROCDIR";
+
 		opendir ( DIR, $dirname );
 		while( $filename = readdir(DIR)){
 			if ($filename =~ /[^_]_[0-9]{6}/){
@@ -211,6 +212,7 @@ sub loadInputFiles{
 		closedir(DIR);
 	}
 	if($opFiles == 1){
+		#$dirname = "$REPODIR";
 		$dirname = "../REPODIR";
 		opendir ( DIR, $dirname );
 		while( $filename = readdir(DIR)){
@@ -351,11 +353,14 @@ sub main{
 		print("Ya hay un AFLIST corriendo\n");
 		return 1;
 	}
-	if (contains(@ARGV, "-h")) {
-		showHelp();
-		return 0;
-	}
+
 	if (contains(@ARGV, "-r")) {
+
+		if (contains(@ARGV, "-h")) {
+			showHelpR();
+			return 0;
+		}
+
 		%fileFiltersHash = loadInputFilesFilters();
 		@inputFiles = loadInputFiles(%fileFiltersHash);
 		#print("inputs: @inputFiles\n");
@@ -365,6 +370,13 @@ sub main{
 		processFiles(\@inputFiles, \%registerFiltersHash);
 	}
 	if (contains(@ARGV, "-s")) {
+
+
+		if (contains(@ARGV, "-h")) {
+			showHelpS();
+			return 0;
+		}
+
 		%centralsById = loadCentralsFile();
 		%areasById = loadAreasFile();
 		%officesByAgents = loadOfficesFromAgents();
@@ -644,6 +656,11 @@ sub main{
 			$querry = <STDIN>;
 		}
 	}
+
+	if (contains(@ARGV, "-h")) {
+		showHelp();
+		return 0;
+	}
 }
 
 sub printRegisterFilters{
@@ -755,5 +772,49 @@ sub processFiles{
 	}
 }
 
+sub showHelp{
+	print("AFLIST\n");
+	print("El comando posee dos modos de uso:\n");
+	print("\nModo Consulta Llamadas sospechosas (-r): \n");
+	print("El Programa permite consultar y filtrar los distintos archivos de llamadas sospchosas\n");
+	print("\nModo Estadisticas Llamadas sospechosas (-s): \n");
+	print("Sobre el modo de uso, consultar -h -r\n");
+	print("Se pueden obtener estadisticas sobre las llamadas sospechosas, como cual es la oficina con mayor cantidad de llamadas sospechosas, etc.\n");
+	print("Sobre el modo de uso, consultar -h -s\n");
+	print("\nModo Escritura (-w): OPCIONAL\n");
+	print("En modo Consulta: el programa escribe el resultado en un archivo de subllamada por ejemplo subllamada.xxx\n");
+	print("En modo Estadistica: el programa escribe el resultado en un archivo a eleccion");
+}
+sub showHelpR{
+	print("Consulta Llamadas Sospechosas -r:\n");
+	print("Modo de Uso:\n");
+
+	print("Se debe primero elejir si desea utilizar los archivos generados por el comando anterior o los archivos generados por la consulta -r anterior. Para eso seguir el menu interactivo. \n");
+	print("Luego se debe proporcionar un rango de aniomes el cual se desea consultar.Ej: 201501-201520\n");
+	print("Junto con una lista de  oficinas.Ej: BEL,DE1 \n");
+	print("El siguiente paso es agregar distintos filtros.\n");
+
+	print("Utilizando el menu interactivo, completar con los filtros deseados\n");
+	print("Se puede encontrar informacion de cada filtro en el mismo menu.\n");
+	print("Una vez que se han introducido los filtros deseados, elejir la opcion 7, para salir.\n");
+	print("Luego se muestran los filtros aplicados y los resultados en pantalla.\n");	
+}
+
+sub showHelpS{
+	print("Estadistica Llamadas Sospechosas -s:\n");
+	print("Modo de Uso:\n");
+
+	print("Se debe primero elejir si desea utilizar los archivos generados por el comando anterior o los archivos generados por la consulta -r anterior. Para eso seguir el menu interactivo. \n");
+	print("Luego se debe proporcionar un rango de aniomes el cual se desea consultar.Ej: 201501-201520\n");
+	print("Junto con una lista de  oficinas.Ej: BEL,DE1 \n");
+	print("El siguiente paso es agregar distintos filtros.\n");
+
+	print("Luego se debe elejir la busqueda que desea realizar: centrales, oficinas, agentes, etc.\n");
+	print("Utilizando el menu interactivo, ingresar la opcion deseada\n");
+
+	print("Una vez que definimos la busqueda, el programa le realizara distinas preguntas, como por ejemplo: rankear por tiempo o cantidad de llamadas, ver la primera o el ranking, etc.\n");
+	print("Cuando el usuario elija la opcion 6, para salir. El programa realizara la busqueda seleccionada terminando la ejecucion.\n");
+
+}
 
 main();
