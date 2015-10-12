@@ -18,5 +18,5 @@ Pasos a seguir para instalar el programa AFRA-J
   
 Pasos a seguir para ejecutar el programa AFRA-J:  
 1. Para ejecutar el programa se debe ejecutar el comando: `. AFINI` (inicializador) dentro del directorio definido como BIN en el paso 9.  
-2. ...  
+2. El script `AFINI` dispara el proceso demonio `AFREC`. Este puede a su vez ser lanzado o detenido con los comandos `Arrancar.sh` o `Detener.sh` respectivamente.  
 
