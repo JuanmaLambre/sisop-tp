@@ -11,8 +11,15 @@ sub contains{
 }
 
 sub isInitialized{
+	$REPODIR=$ENV{'REPODIR'};
+	$PROCDIR=$ENV{'PROCDIR'};
+	$MAEDIR=$ENV{'MAEDIR'};
+	if ("$REPODIR" and "$PROCDIR"){
+		return 1;	
+	}else{
+		return 0;
+	}
 	
-	return 1;
 }
 
 sub isAlreadyRunning{
@@ -186,7 +193,7 @@ sub loadInputFiles{
 	#print("range: $range\n");
 	@list;
 	if($opFiles == 2){
-		$dirname = "../PROCDIR";
+		$dirname = "$PROCDIR";
 		opendir ( DIR, $dirname );
 		while( $filename = readdir(DIR)){
 			if ($filename =~ /[^_]_[0-9]{6}/){
@@ -194,7 +201,7 @@ sub loadInputFiles{
 				@dates = split /-/, $range;
 				if ($params[1] >= $dates[0] and $params[1] <= $dates[1]){
 					if (($numberOfOffices == 0) or (contains(@offices, $params[0]))) {
-						push(@list, "../PROCDIR/$filename");
+						push(@list, "$PROCDIR/$filename");
 					}
 
 					
@@ -208,7 +215,7 @@ sub loadInputFiles{
 		opendir ( DIR, $dirname );
 		while( $filename = readdir(DIR)){
 			if ($filename =~ /subllamadas\.[0-9]{3}/){
-					push(@list, "../REPODIR/$filename");
+					push(@list, "$REPODIR/$filename");
 			}
 		}
 	}
@@ -270,7 +277,7 @@ sub loadInputFilesFilters{
 sub loadCentralsFile{
 	my %hash;
 	my $fileHdl;
-	my $fileName = "../mae/centrales.csv";
+	my $fileName = "$MAEDIR/centrales.csv";
 	open ($fileHdl,"<", $fileName) or die "no se puede abrir $fileName: $!";
 	while (my $line=<$fileHdl>){
 		chomp($line);
@@ -284,7 +291,7 @@ sub loadCentralsFile{
 sub loadAreasFile{
 	my %hash;
 	my $fileHdl;
-	my $fileName = "../mae/CdP.csv";
+	my $fileName = "$MAEDIR/CdP.csv";
 	open ($fileHdl,"<", $fileName) or die "no se puede abrir $fileName: $!";
 	while (my $line=<$fileHdl>){
 		chomp($line);
@@ -294,7 +301,7 @@ sub loadAreasFile{
 	}
 	close ($fileHdl);
 
-	my $fileName = "../mae/CdA.csv";
+	my $fileName = "$MAEDIR/CdA.csv";
 	open ($fileHdl,"<", $fileName) or die "no se puede abrir $fileName: $!";
 	while (my $line=<$fileHdl>){
 		chomp($line);
@@ -308,12 +315,12 @@ sub loadAreasFile{
 sub loadOfficesFromAgents{
 	my %hash;
 	my $fileHdl;
-	my $fileName = "../mae/agentes.csv";
+	my $fileName = "$MAEDIR/agentes.csv";
 	open ($fileHdl,"<", $fileName) or die "no se puede abrir $fileName: $!";
 	while (my $line=<$fileHdl>){
 		chomp($line);
 		my @tokens = split /;/, $line;
-		my $agent = "$tokens[0] $tokens[1]";
+		my $agent = "$tokens[2]";
 		$hash{$agent} = $tokens[3];
 	}
 	close ($fileHdl);
@@ -323,12 +330,12 @@ sub loadOfficesFromAgents{
 sub loadEmails{
 	my %hash;
 	my $fileHdl;
-	my $fileName = "../mae/agentes.csv";
+	my $fileName = "$MAEDIR/agentes.csv";
 	open ($fileHdl,"<", $fileName) or die "no se puede abrir $fileName: $!";
 	while (my $line=<$fileHdl>){
 		chomp($line);
 		my @tokens = split /;/, $line;
-		my $agent = "$tokens[0] $tokens[1]";
+		my $agent = "$tokens[2]";
 		$hash{$agent} = $tokens[4];
 	}
 	close ($fileHdl);
