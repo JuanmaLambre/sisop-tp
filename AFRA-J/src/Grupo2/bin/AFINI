@@ -31,7 +31,7 @@ function installationIsComplete() {
 
 function maeFilesExist() {
     # Chequeo que existan los archivos necesarios
-    if [ ! -f "$CDP" -o ! -f "$CDA" ] && [ ! -f "$CDC" -o ! -f "$AGENTES" ] && [ ! -f "$TLLAMA" -o ! -f "$UMBRAL" ]
+    if [ ! -f "$CDP" -o ! -f "$CDA" ] && [ ! -f "$CENTRALES" -o ! -f "$AGENTES" ] && [ ! -f "$TLLAMA" -o ! -f "$UMBRAL" ]
     then
         echo "Archivos faltantes. Por favor, ejecute AFINSTAL para continuar con la iniciacion"
         ./$GRALOG "AFINI" "Archivos de instalacion faltantes" "ERR"
@@ -127,7 +127,7 @@ then
         # Seteo el path de MAEDIR y sus archivos para checkear que existan
         CDP="$MAEDIR/CdP.csv"
         CDA="$MAEDIR/CdA.csv"
-        CDC="$MAEDIR/CdC.mae"
+        CENTRALES="$MAEDIR/centrales.csv"
         AGENTES="$MAEDIR/agentes.csv"
         TLLAMA="$MAEDIR/tllama.mae"
         UMBRAL="$MAEDIR/umbrales.csv"
