@@ -25,8 +25,8 @@ sub isInitialized{
 
 sub isAlreadyRunning{
 	$counter = `ps -a | grep -c 'AFLIST'`;
-	#$counterIfIsNotRunning = 2; #Linux
-	$counterIfIsNotRunning = 3; #MAC
+	$counterIfIsNotRunning = 2; #Linux
+	#$counterIfIsNotRunning = 3; #MAC
 	if($counter > $counterIfIsNotRunning){
 		return 1;
 	}else{
