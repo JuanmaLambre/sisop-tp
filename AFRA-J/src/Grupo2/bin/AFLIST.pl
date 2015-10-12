@@ -202,7 +202,7 @@ sub loadInputFiles{
 				@dates = split /-/, $range;
 				if ($params[1] >= $dates[0] and $params[1] <= $dates[1]){
 					if (($numberOfOffices == 0) or (contains(@offices, $params[0]))) {
-						push(@list, "$PROCDIR/$filename");
+						push(@list, "$dirname/$filename");
 					}
 
 					
@@ -212,16 +212,16 @@ sub loadInputFiles{
 		closedir(DIR);
 	}
 	if($opFiles == 1){
-		#$dirname = "$REPODIR";
-		$dirname = "../REPODIR";
+		$dirname = "$REPODIR";
+		#$dirname = "../REPODIR";
 		opendir ( DIR, $dirname );
 		while( $filename = readdir(DIR)){
 			if ($filename =~ /subllamadas\.[0-9]{3}/){
-					push(@list, "$REPODIR/$filename");
+					push(@list, "$dirname/$filename");
 			}
 		}
+		closedir(DIR);
 	}
-	closedir(DIR);
 	return @list;
 }
 
@@ -354,6 +354,9 @@ sub main{
 		return 1;
 	}
 
+	$outputFileName;
+	$outputFile;
+
 	if (contains(@ARGV, "-r")) {
 
 		if (contains(@ARGV, "-h")) {
@@ -361,6 +364,13 @@ sub main{
 			return 0;
 		}
 
+		if (contains(@ARGV, "-w")) {
+			$outputFileName = getOutputFile();
+		}else{
+			$outputFileName = getNewSubllamadasFile();
+		}
+		open($outputFile, ">", $outputFileName);
+		
 		%fileFiltersHash = loadInputFilesFilters();
 		@inputFiles = loadInputFiles(%fileFiltersHash);
 		#print("inputs: @inputFiles\n");
@@ -368,6 +378,8 @@ sub main{
 		%registerFiltersHash = loadRegisterFilters();
 		printRegisterFilters(%registerFiltersHash);
 		processFiles(\@inputFiles, \%registerFiltersHash);
+
+		close($outputFile);
 	}
 	if (contains(@ARGV, "-s")) {
 
@@ -375,6 +387,13 @@ sub main{
 		if (contains(@ARGV, "-h")) {
 			showHelpS();
 			return 0;
+		}
+
+		if (contains(@ARGV, "-w")) {
+			$outputFileName = getOutputFile();
+			open($outputFile, ">", $outputFileName);
+		}else{
+			$outputFile = \*STDOUT;
 		}
 
 		%centralsById = loadCentralsFile();
@@ -465,15 +484,15 @@ sub main{
 				if ($op2 == 1){
 					if ($op == 1){
 						foreach my $call (sort { -($hashCentralsCalls{$a} <=> $hashCentralsCalls{$b}) } keys %hashCentralsCalls) { 
-				       		print("Central con mayor cantidad de llamadas sospechosas: $call -> $centralsById{$call} ($hashCentralsCalls{$call} llamadas).\n");
+				       		print $outputFile "Central con mayor cantidad de llamadas sospechosas: $call -> $centralsById{$call} ($hashCentralsCalls{$call} llamadas).\n" ;
 							last;
 		    			}	
 		    		}else{
 		    			if ($op == 2){
-		    				print("Ranking de centrales:\n");
+		    				print $outputFile "Ranking de centrales:\n";
 		    				my $counter = 1;
 							foreach my $call (sort { -($hashCentralsCalls{$a} <=> $hashCentralsCalls{$b}) } keys %hashCentralsCalls) {
-						    	print("$counter: $call -> $centralsById{$call} ($hashCentralsCalls{$call} llamadas)\n");
+						    	print $outputFile "$counter: $call -> $centralsById{$call} ($hashCentralsCalls{$call} llamadas)\n";
 			    				++$counter;
 			    			}
 
@@ -485,15 +504,15 @@ sub main{
 		    		if ($op2 == 2){
 			    		if ($op == 1){
 							foreach my $call (sort { -($hashCentralsCallsInSeconds{$a} <=> $hashCentralsCallsInSeconds{$b}) } keys %hashCentralsCallsInSeconds) { 
-					       		print("Central con mayor cantidad de segundos en llamadas sospechosas: $call -> $centralsById{$call} ($hashCentralsCallsInSeconds{$call} segundos).\n");
+					       		print $outputFile "Central con mayor cantidad de segundos en llamadas sospechosas: $call -> $centralsById{$call} ($hashCentralsCallsInSeconds{$call} segundos).\n";
 								last;
 			    			}	
 			    		}else{
 			    			if ($op == 2){
-			    				print("Ranking de centrales:\n");
+			    				print $outputFile "Ranking de centrales:\n";
 			    				my $counter = 1;
 								foreach my $call (sort { -($hashCentralsCalls{$a} <=> $hashCentralsCalls{$b}) } keys %hashCentralsCalls) {
-							    	print("   $counter: $call -> $centralsById{$call} ($hashCentralsCallsInSeconds{$call} segundos)\n");
+							    	print $outputFile "   $counter: $call -> $centralsById{$call} ($hashCentralsCallsInSeconds{$call} segundos)\n";
 				    				++$counter;
 				    			}
 
@@ -514,15 +533,15 @@ sub main{
 				if ($op2 == 1){
 					if ($op == 1){
 						foreach my $call (sort { -($hashOfficesCalls{$a} <=> $hashOfficesCalls{$b}) } keys %hashOfficesCalls) { 
-				       		print("Oficina con mayor cantidad de llamadas sospechosas: $call: $hashOfficesCalls{$call}\n");
+				       		print $outputFile "Oficina con mayor cantidad de llamadas sospechosas: $call: $hashOfficesCalls{$call}\n";
 							last;
 		    			}	
 		    		}else{
 		    			if ($op == 2){
-		    				print("Ranking de oficinas:\n");
+		    				print $outputFile "Ranking de oficinas:\n";
 		    				my $counter = 1;
 							foreach my $call (sort { -($hashOfficesCalls{$a} <=> $hashOfficesCalls{$b}) } keys %hashOfficesCalls) {
-						    	print("$counter: $call ($hashOfficesCalls{$call})\n");
+						    	print $outputFile "$counter: $call ($hashOfficesCalls{$call})\n";
 			    				++$counter;
 			    			}
 
@@ -534,15 +553,15 @@ sub main{
 		    		if($op2 == 2){
 		    			if ($op == 1){
 							foreach my $call (sort { -($hashOfficesCallsInSeconds{$a} <=> $hashOfficesCallsInSeconds{$b}) } keys %hashOfficesCallsInSeconds) { 
-					       		print("Oficina con mayor cantidad de segundos en llamadas sospechosas: $call ($hashOfficesCallsInSeconds{$call} segundos)\n");
+					       		print $outputFile "Oficina con mayor cantidad de segundos en llamadas sospechosas: $call ($hashOfficesCallsInSeconds{$call} segundos)\n";
 								last;
 			    			}	
 			    		}else{
 			    			if ($op == 2){
-			    				print("Ranking de oficinas:\n");
+			    				print $outputFile "Ranking de oficinas:\n";
 			    				my $counter = 1;
 								foreach my $call (sort { -($hashOfficesCallsInSeconds{$a} <=> $hashOfficesCallsInSeconds{$b}) } keys %hashOfficesCallsInSeconds) {
-							    	print("$counter: $call ($hashOfficesCallsInSeconds{$call} segundos)\n");
+							    	print $outputFile "$counter: $call ($hashOfficesCallsInSeconds{$call} segundos)\n";
 				    				++$counter;
 				    			}
 
@@ -564,16 +583,16 @@ sub main{
 					if ($op == 1){
 						foreach my $call (sort { -($hashAgentsCalls{$a} <=> $hashAgentsCalls{$b}) } keys %hashAgentsCalls) { 
 				       		my $email = lc $emails{$call};
-				       		print("Agente con mayor cantidad de llamadas sospechosas: $call\n   email: $email\n   oficina: $officesByAgents{$call}\n");
+				       		print $outputFile "Agente con mayor cantidad de llamadas sospechosas: $call\n   email: $email\n   oficina: $officesByAgents{$call}\n";
 							last;
 		    			}	
 		    		}else{
 		    			if ($op == 2){
-		    				print("Ranking de agentes:\n");
+		    				print $outputFile "Ranking de agentes:\n";
 		    				my $counter = 1;
 							foreach my $call (sort { -($hashAgentsCalls{$a} <=> $hashAgentsCalls{$b}) } keys %hashAgentsCalls) {
 								my $email = lc $emails{$call};
-						    	print("   $counter: $call ($hashAgentsCalls{$call} llamadas)\n      email: $email\n      oficina: $officesByAgents{$call}\n");
+						    	print $outputFile "   $counter: $call ($hashAgentsCalls{$call} llamadas)\n      email: $email\n      oficina: $officesByAgents{$call}\n";
 			    				++$counter;
 			    			}
 
@@ -586,16 +605,16 @@ sub main{
 	    				if ($op == 1){
 							foreach my $call (sort { -($hashAgentsCallsInSeconds{$a} <=> $hashAgentsCallsInSeconds{$b}) } keys %hashAgentsCallsInSeconds) { 
 					       		my $email = lc $emails{$call};
-					       		print("Agente con mayor cantidad de segundos en llamadas sospechosas: $call\n   email: $email\n   oficina: $officesByAgents{$call}\n");
+					       		print $outputFile "Agente con mayor cantidad de segundos en llamadas sospechosas: $call\n   email: $email\n   oficina: $officesByAgents{$call}\n";
 								last;
 			    			}	
 			    		}else{
 			    			if ($op == 2){
-			    				print("Ranking de agentes:\n");
+			    				print $outputFile "Ranking de agentes:\n";
 			    				my $counter = 1;
 								foreach my $call (sort { -($hashAgentsCallsInSeconds{$a} <=> $hashAgentsCallsInSeconds{$b}) } keys %hashAgentsCallsInSeconds) {
 									my $email = lc $emails{$call};
-							    	print("   $counter: $call ($hashAgentsCallsInSeconds{$call} segundos)\n      email: $email\n      oficina: $officesByAgents{$call}\n");
+							    	print $outputFile "   $counter: $call ($hashAgentsCallsInSeconds{$call} segundos)\n      email: $email\n      oficina: $officesByAgents{$call}\n";
 				    				++$counter;
 				    			}
 
@@ -619,12 +638,12 @@ sub main{
 						}else{
 							$destination = $call;
 						}
-						print("El destino con mayor cantidad de llamadas sospechosas es $destination -> $areasById{$call}\n");
+						print $outputFile "El destino con mayor cantidad de llamadas sospechosas es $destination -> $areasById{$call}\n";
 						last;
 	    			}	
 	    		}else{
 	    			if ($op == 2){
-	    				print("Ranking de destinos:\n");
+	    				print $outputFile "Ranking de destinos:\n";
 	    				my $counter = 1;
 						foreach my $call (sort { -($hashAreasCalls{$a} <=> $hashAreasCalls{$b}) } keys %hashAreasCalls) {
 					    	if ($call < 0){ #llamada al exterior
@@ -632,7 +651,7 @@ sub main{
 							}else{
 								$destination = $call;
 							}
-							print("   $counter: $destination -> $areasById{$call}\n");
+							print $outputFile "   $counter: $destination -> $areasById{$call}\n";
 	    					++$counter;
 		    			}
 
@@ -642,11 +661,11 @@ sub main{
 	    		}
 			}
 			if ( $querry == 5 ){
-				print("Ranking de umbrales (se ignoran los umbrales con una sola llamada sospechosa):\n");
+				print $outputFile "Ranking de umbrales (se ignoran los umbrales con una sola llamada sospechosa):\n";
 				my $counter = 1;
 			    foreach my $call (sort { -($hashUmbralsCalls{$a} <=> $hashUmbralsCalls{$b}) } keys %hashUmbralsCalls) { 
 		       		if ($hashUmbralsCalls{$call} > 1){
-		       			print("   $counter: $call ($hashUmbralsCalls{$call} llamadas)\n");	
+		       			print $outputFile "   $counter: $call ($hashUmbralsCalls{$call} llamadas)\n";	
 		       		}
 		       		++$counter;
     			}
@@ -654,6 +673,9 @@ sub main{
 			$in = <STDIN>;
 			showStatisticsMenu();
 			$querry = <STDIN>;
+		}
+		if (contains(@ARGV, "-w")) {#sino es stdout, que no se cierra
+			close($outputFile);
 		}
 	}
 
@@ -672,9 +694,6 @@ sub printRegisterFilters{
 
 	my @numbers = @{$registerFiltersHash{"numbers"}};
 
-
-
-
 	print("Filtros Que Se Utilizaran:\n");
 	print("hash{centrals} = @centrals\n");
 	print("hash{agents} = @agents\n");
@@ -682,12 +701,6 @@ sub printRegisterFilters{
 	print("hash{types} = @types\n");
 	print("hash{times} = $times\n");
 	print("hash{numbers} = @numbers\n");
-
-
-
-
-
-	
 
 	$input = <STDIN>;
 }
@@ -699,7 +712,7 @@ sub processFiles{
 	#print("inputFiles = @files\n");
 	my @centrals = @{$filters{"centrals"}};
 	my $centralSize= scalar @centrals;
-
+	#print("centrals = @centrals\n");
 	my @agents = @{$filters{"agents"}};
 	my $agentsSize= scalar @agents;
 
@@ -716,43 +729,40 @@ sub processFiles{
 	my @numbers = @{$filters{"numbers"}};
 	my $numbersSize= scalar @numbers;
 
-
-	#print "times: $times";
-	#print "times Array: @timesArray";
-			
-	
-
-	
-
-	#print("centrals @centrals\n");
-	#print "central size: $centralSize";
-
 	my $fileHdl;
 	foreach my $file (@files){
 		open ($fileHdl,"<", $file) or die "no se puede abrir $file: $!";
 		while (my $linea=<$fileHdl>) {
 			chomp($linea);
+			#print("linea = $linea\n");
 			@tokens = split /;/, $linea;
+			#print("linea = $linea\n");
 			if (not (  contains(@centrals, $tokens[0]) or $centralSize==0)){
+				#print("if (not (  contains(\@centrals, \$tokens[0]) or \$centralSize==0))\n");
 				next;
 			}
 			if (not (  contains(@agents, $tokens[1]) or $agentsSize==0)){
+				#print("if (not (  contains(\@agents, \$tokens[1]) or \$agentsSize==0))\n");
 				next;
 			}
 			if (not (  contains(@umbrals, $tokens[2]) or $umbralsSize==0)){
+				#print("if (not (  contains(\@umbrals, \$tokens[2]) or \$umbralsSize==0))\n");
 				next;
 			}
 			if (not (  contains(@types, $tokens[3]) or $typesSize==0)){
+				#print("if (not (  contains(\@types, \$tokens[3]) or \$typesSize==0))\n");
 				next;
 			}
 
 			if (not (  ($tokens[5] >= $timesArray[0] and $tokens[5] <= $timesArray[1]) or $times==0)){
+				#print("if (not (  (\$tokens[5] >= \$timesArray[0] and \$tokens[5] <= \$timesArray[1]) or \$times==0))\n");
 				next;
 			}
 
 			my $areaYNumero = "$tokens[6]-$tokens[7]";
 
 			if (not (  contains(@numbers, $areaYNumero) or $numbersSize==0)){
+				#print("if (not (  contains(\@numbers, \$areaYNumero) or \$numbersSize==0))\n");
 				next;
 			}
 
@@ -760,12 +770,12 @@ sub processFiles{
 
 			my $numberOfTokens = scalar @tokens;
 			if($numberOfTokens > 12){ #ya tiene oficina
-				print "$linea\n";
+				print $outputFile "$linea\n";
 			}else{ #append oficina
 				my @params = split /_/, $file;
 				my @path = split /\//, $params[0];
 				my $office = pop(@path);
-				print "$linea;$office\n";
+				print $outputFile "$linea;$office\n";
 			}
 		}
 		close ($fileHdl);
@@ -815,6 +825,37 @@ sub showHelpS{
 	print("Una vez que definimos la busqueda, el programa le realizara distinas preguntas, como por ejemplo: rankear por tiempo o cantidad de llamadas, ver la primera o el ranking, etc.\n");
 	print("Cuando el usuario elija la opcion 6, para salir. El programa realizara la busqueda seleccionada terminando la ejecucion.\n");
 
+}
+
+sub getOutputFile{
+	my $size = scalar @ARGV;
+	for(my $i=0; $i<($size-1); ++$i){
+		print("ARGV[$i] = $ARGV[$i]\n");
+		if($ARGV[$i] eq "-w"){
+			return $ARGV[$i + 1];
+		}
+	}
+	return "";
+}
+
+sub getNewSubllamadasFile{
+	$base = "$REPODIR/subllamadas.";
+	$counterUnits = 0;
+	$counterTens = 0;
+	$counterHundreds = 0;
+	$extension = "$counterHundreds$counterTens$counterUnits";
+	while ( -f $base.$extension ) {
+		++$counterUnits;
+		if($counterUnits == 10){
+			$counterUnits -= 10;
+			++$counterTens;
+			if($counterTens == 10){
+				++$counterHundreds;
+			}
+		}
+		$extension = "$counterHundreds$counterTens$counterUnits";	
+	}
+	return $base.$extension;
 }
 
 main();
