@@ -11,8 +11,9 @@ NOVEDADES=$NOVEDIR
 MOVERA="$BINDIR/MoverA.sh"
 GRALOG="$BINDIR/GraLog.sh"
 
+
 # DEBERIA SER CORRIDO EN BACKGROUND YA QUE ES UN DAEMON
-TIEMPO_SLEEP_SEGUNDOS="5"
+TIEMPO_SLEEP_SEGUNDOS="30"
 # Mensajes
 MENSAJE_ARCHIVO_ACEPTADO="Archivo $NOMBRE_ARCHIVO aceptado, movido a $PATH_ACEPTADO"
 MENSAJE_TIPO_INVALIDO="Tipo de archivo invalido"
@@ -26,7 +27,9 @@ MENSAJE_AFUMB_OCUPADO="Invocacion de AFUMB pospuesta para el siguiente ciclo"
 # Devuelve en la variable cantidad_archivos
 # la cantidad en el directorio
 function hay_archivos() {
-  cantidad_archivos=$(ls -1 $1 | wc -l)
+  #cantidad_archivos=$(ls -1 $1 | wc -l)
+  #ESTO LO AGREGO PARA QUE EL ls NO CUENTA LA CARPETA "duplicados" QUE PODRIA LLEGAR A ESTAR A CAUSA DEL MoverA
+  cantidad_archivos=$(ls -1 $1 | grep -v "duplicados" | wc -l)
   # echo "La cantidad de archivos es $cantidad_archivos"
 }
 
@@ -277,8 +280,8 @@ while true; do
         # echo "Voy a arrancar AFUMB"
         if [[ $(ps -aux | grep -e "[0-9] [a-z]* AFREC" ) == "" ]];then
           # echo "No se esta ejecutando asi que lo arranco"
-            bash $BINDIR/Arrancar.sh ./AFUMB.sh
-            PID_AFUMB=$(pgrep AFUMB.sh)
+            bash $BINDIR/Arrancar.sh ./AFUMB
+            PID_AFUMB=$(pgrep AFUMB)
             $GRALOG "AFREC" "AFUMB corriendo bajo el no.: $PID_AFUMB" "INFO"
         else
           # echo "Se esta ejecutando asi que lo pospongo"

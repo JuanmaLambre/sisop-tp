@@ -31,7 +31,7 @@ function installationIsComplete() {
 
 function maeFilesExist() {
     # Chequeo que existan los archivos necesarios
-    if [ ! -f "$CDP" -o ! -f "$CDA" ] && [ ! -f "$CENTRALES" -o ! -f "$AGENTES" ] && [ ! -f "$TLLAMA" -o ! -f "$UMBRAL" ]
+    if [ ! -f "$CDP" -o ! -f "$CDA" ] && [ ! -f "$CDC" -o ! -f "$AGENTES" ] && [ ! -f "$TLLAMA" -o ! -f "$UMBRAL" ]
     then
         echo "Archivos faltantes. Por favor, ejecute AFINSTAL para continuar con la iniciacion"
         ./$GRALOG "AFINI" "Archivos de instalacion faltantes" "ERR"
@@ -127,7 +127,7 @@ then
         # Seteo el path de MAEDIR y sus archivos para checkear que existan
         CDP="$MAEDIR/CdP.csv"
         CDA="$MAEDIR/CdA.csv"
-        CENTRALES="$MAEDIR/centrales.csv"
+        CDC="$MAEDIR/CdC.mae"
         AGENTES="$MAEDIR/agentes.csv"
         TLLAMA="$MAEDIR/tllama.mae"
         UMBRAL="$MAEDIR/umbrales.csv"
@@ -170,16 +170,16 @@ then
             then
                 if [[ $(ps -aux | grep -e "[0-9] [a-z]* AFREC") == "" ]]
                 then
-                    bash $BINDIR/Arrancar.sh ./AFREC.sh &
-                    PID_AFREC=$!
-                    echo "Para detenerlo ejecute el archivo Detener.sh"
+                    bash $BINDIR/Arrancar.sh ./AFREC # &
+                    PID_AFREC=$!                    
+		    echo "Para detenerlo ejecute el archivo Detener.sh de la forma: bash Detener.sh ./AFREC"
                 else
                     echo "AFREC ya esta corriendo"
                     PID_AFREC=$( ps -x | grep -e "[0-9] [a-z]* AFREC" | sed 's:^ \([0-9]*\).*:\1:' )
                 fi
                 ./$GRALOG "AFINI" "AFREC corriendo bajo el no.: $PID_AFREC" "INFO"
             else
-                echo 'Puede comenzar el demonio AFREC ejecutando `Arrancar.sh AFREC.sh`'
+		echo 'Puede comenzar el demonio AFREC ejecutando `bash Arrancar.sh AFREC.sh `' # &`'
             fi
         fi
     fi
