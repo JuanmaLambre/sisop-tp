@@ -87,6 +87,9 @@ function setExePermissions {
 
 # EJECUCION:
 
+GRALOG="GraLog.sh"
+setExePermissions ./$GRALOG
+
 # (1) Verificar si el ambiente ya ha sido inicializado
 if ! envIsSet
 then
@@ -99,7 +102,6 @@ then
     done
     CONFDIR="$GRUPO/conf"
     AFINSTALCONF="$CONFDIR/AFINSTAL.cnfg"
-    GRALOG="GraLog.sh"
 
     # Inicializo y/o exporto variables globales de Grupo2/conf/AFINSTAL.cnfg
     BINDIR=`obtenerVariable "BINDIR"`
