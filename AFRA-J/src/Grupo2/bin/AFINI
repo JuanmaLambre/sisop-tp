@@ -87,8 +87,8 @@ function setExePermissions {
 
 # EJECUCION:
 
-GRALOG="GraLog.sh"
-setExePermissions ./$GRALOG
+GRALOG="./GraLog.sh"
+setExePermissions $GRALOG
 
 # (1) Verificar si el ambiente ya ha sido inicializado
 if ! envIsSet
@@ -150,36 +150,37 @@ then
             export LOGEXT
 
             # (5) Grabar en el log variables y contenido
-            ./$GRALOG "AFINI" "Directorio de Configuración: $CONFDIR" "INFO"
-            ./$GRALOG "AFINI" "Archivos en $CONFDIR: `ls -p $CONFDIR | grep -v /`" "INFO"
-            ./$GRALOG "AFINI" "Directorio de Ejecutables: $BINDIR" "INFO"
-            ./$GRALOG "AFINI" "Archivos en $BINDIR: `ls -p $BINDIR | grep -v /`" "INFO"
-            ./$GRALOG "AFINI" "Directorio de Maestros y Tablas: $MAEDIR" "INFO"
-            ./$GRALOG "AFINI" "Archivos en $MAEDIR: `ls -p $MAEDIR | grep -v /`" "INFO"
-            ./$GRALOG "AFINI" "Directorio de recepción de archivos de llamadas: $NOVEDIR" "INFO"
-            ./$GRALOG "AFINI" "Directorio de Archivos de llamadas Aceptados: $ACEPDIR" "INFO"
-            ./$GRALOG "AFINI" "Directorio de Archivos de llamadas Sospechosas: $PROCDIR" "INFO"
-            ./$GRALOG "AFINI" "Directorio de Archivos de Reportes de llamadas: $REPODIR" "INFO"
-            ./$GRALOG "AFINI" "Directorio de Archivos de Log: $LOGDIR" "INFO"
-            ./$GRALOG "AFINI" "Archivos en $LOGDIR: `ls -p $LOGDIR | grep -v /`" "INFO"
-            ./$GRALOG "AFINI" "Directorio de Archivos Rechazados: $RECHDIR" "INFO"
-            ./$GRALOG "AFINI" "Estado del Sistema: INICIALIZADO" "INFO"
+            $GRALOG "AFINI" "Directorio de Configuración: $CONFDIR" "INFO"
+            $GRALOG "AFINI" "Archivos en $CONFDIR: `ls -p $CONFDIR | grep -v /`" "INFO"
+            $GRALOG "AFINI" "Directorio de Ejecutables: $BINDIR" "INFO"
+            $GRALOG "AFINI" "Archivos en $BINDIR: `ls -p $BINDIR | grep -v /`" "INFO"
+            $GRALOG "AFINI" "Directorio de Maestros y Tablas: $MAEDIR" "INFO"
+            $GRALOG "AFINI" "Archivos en $MAEDIR: `ls -p $MAEDIR | grep -v /`" "INFO"
+            $GRALOG "AFINI" "Directorio de recepción de archivos de llamadas: $NOVEDIR" "INFO"
+            $GRALOG "AFINI" "Directorio de Archivos de llamadas Aceptados: $ACEPDIR" "INFO"
+            $GRALOG "AFINI" "Directorio de Archivos de llamadas Sospechosas: $PROCDIR" "INFO"
+            $GRALOG "AFINI" "Directorio de Archivos de Reportes de llamadas: $REPODIR" "INFO"
+            $GRALOG "AFINI" "Directorio de Archivos de Log: $LOGDIR" "INFO"
+            $GRALOG "AFINI" "Archivos en $LOGDIR: `ls -p $LOGDIR | grep -v /`" "INFO"
+            $GRALOG "AFINI" "Directorio de Archivos Rechazados: $RECHDIR" "INFO"
+            $GRALOG "AFINI" "Estado del Sistema: INICIALIZADO" "INFO"
 
             # (6) Ver si desea arrancar AFREC
             read -p "Desea correr AFREC? (s/n) " -n 1 -r
             echo
             if [[ $REPLY =~ ^[Ss]$ ]]
             then
-                if [[ $(ps -aux | grep -e "[0-9] [a-z]* AFREC") == "" ]]
+                PID_AFREC=`pgrep AFREC`
+                if [ -z $PID_AFREC ]
                 then
-                    bash $BINDIR/Arrancar.sh ./AFREC # &
-                    PID_AFREC=$!                    
-		    echo "Para detenerlo ejecute el archivo Detener.sh de la forma: bash Detener.sh ./AFREC"
+                    ./Arrancar.sh ./AFREC 
+                    PID_AFREC=`pgrep AFREC`
+                    echo "AFREC corriendo con PID $PID_AFREC"
+		    echo 'Para detenerlo ejecute el archivo Detener.sh de la forma `bash Detener.sh ./AFREC`'
                 else
-                    echo "AFREC ya esta corriendo"
-                    PID_AFREC=$( ps -x | grep -e "[0-9] [a-z]* AFREC" | sed 's:^ \([0-9]*\).*:\1:' )
+                    echo "AFREC ya esta corriendo bajo PID $PID_AFREC"
                 fi
-                ./$GRALOG "AFINI" "AFREC corriendo bajo el no.: $PID_AFREC" "INFO"
+                $GRALOG "AFINI" "AFREC corriendo bajo el no.: $PID_AFREC" "INFO"
             else
 		echo 'Puede comenzar el demonio AFREC ejecutando `bash Arrancar.sh AFREC.sh `' # &`'
             fi
