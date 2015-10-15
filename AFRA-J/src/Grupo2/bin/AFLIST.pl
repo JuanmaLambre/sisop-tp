@@ -193,7 +193,7 @@ sub loadInputFiles{
 	@list;
 	if($opFiles == 2){
 		$dirname = "$PROCDIR";
-	#	$dirname = "../PROCDIR";
+		#$dirname = "../PROCDIR";
 
 		opendir ( DIR, $dirname );
 		while( $filename = readdir(DIR)){
@@ -730,7 +730,9 @@ sub processFiles{
 	my $numbersSize= scalar @numbers;
 
 	my $fileHdl;
+	my $numFiles=0;
 	foreach my $file (@files){
+		$numFiles= $numFiles+1;
 		open ($fileHdl,"<", $file) or die "no se puede abrir $file: $!";
 		while (my $linea=<$fileHdl>) {
 			chomp($linea);
@@ -765,8 +767,11 @@ sub processFiles{
 				#print("if (not (  contains(\@numbers, \$areaYNumero) or \$numbersSize==0))\n");
 				next;
 			}
-
-
+		#print "anmio mes @tokens\n";
+			#print "anmio mes $tokens[11] \n";
+			$tempstr = $tokens[11];
+			$aniomes = substr( $tempstr, 0, 6);
+			#print "aniomes: $aniomes";
 
 			my $numberOfTokens = scalar @tokens;
 			if($numberOfTokens > 12){ #ya tiene oficina
@@ -775,11 +780,12 @@ sub processFiles{
 				my @params = split /_/, $file;
 				my @path = split /\//, $params[0];
 				my $office = pop(@path);
-				print $outputFile "$linea;$office\n";
+				print $outputFile "$linea;$office;$aniomes\n";
 			}
 		}
 		close ($fileHdl);
 	}
+	print "Done Processed Files: $numFiles\n";
 }
 
 sub showHelp{
