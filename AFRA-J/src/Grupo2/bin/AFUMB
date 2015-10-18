@@ -170,10 +170,14 @@ function validar_numero_B {
 			if [[ ( $Tipo == "DDN" || $Tipo == "LOC" ) && ( $(echo -n "$AreaB$LineaB" | wc -m ) != 10 ) ]]; then
 				rechazar_registro "Se rechaza porque la llamada es de tipo $Tipo pero el area y el numero de linea del numero B no suman 10 digitos"
 			else
-				if [ $Duracion -lt 0 ]; then
-					rechazar_registro "Duracion de la llamada es negativa"
+				if [ $Duracion =="" ]; then					
+					rechazar_registro "Duracion de la llamada se encuentra vacia"
 				else
-					analizar_umbrales
+					if [ $Duracion -lt 0 ]; then
+						rechazar_registro "Duracion de la llamada es negativa"
+					else
+						analizar_umbrales
+					fi
 				fi
 			fi
 		fi
@@ -238,6 +242,8 @@ Cantidad_archivos_procesados=0
 Cantidad_archivos_rechazadas=0
 
 #2. Procesar Un Archivo
+IFS="
+"
 for Archivo_llamadas in $Lista_archivos
 do
 	#2.1 Verificar que no sea un archivo duplicado
@@ -265,7 +271,8 @@ do
 			Cantidad_llamadas_sospechosas=0
 
 
-			while read -r llamada
+			#while read -r llamada
+			for llamada in $(cat $Archivo_llamadas_path)
 			do
 				#4. Procesar un registro
 				((Cantidad_llamadas++))
@@ -291,7 +298,8 @@ do
 					fi
 				fi		
 			#5. Repetir hasta que se termine el archivo.
-			done < $Archivo_llamadas_path
+			#done < $Archivo_llamadas_path
+			done
 
 			#6. Fin de Archivo
 			mover_archivo $Archivo_llamadas_path $PROCDIR/proc
