@@ -78,27 +78,6 @@ function validar_codigo_central() {
   esac
 }
 
-# Chequea si el anio a validar es bisiesto
-function bisiesto() {
- YEAR=$1
- rem1=$((YEAR%4))
- rem2=$((YEAR%100))
- rem3=$((YEAR%400))
- let "es_bisiesto = 0"
-
- if [ ${rem2} = "0" -a ${rem3} != "0" ]
- then
-        let "es_bisiesto = 1"
- fi
-
- if [ ${rem1} = "0" -a ${rem2} != "0" ]
- then
-        let "es_bisiesto = 0"
- else
-        let "es_bisiesto = 1"
- fi
-}
-
 # Chequea que la fecha sea valida
 # No chequea bisiestos ni esas cosas
 function validar_fecha() {
@@ -121,51 +100,17 @@ function validar_fecha() {
     $MOVERA "$NOVEDADES/$file" "$RECHAZADOS"
     #mv "$NOVEDADES/$file" "$RECHAZADOS"
     let "resultado = 1"
+    return
   else
     : # echo "Anio valido"
   fi
 
-  if [ $mes_a_validar -lt "01" -o $mes_a_validar -gt "12" ]; then
-    # echo "Mes invalido"
-    $GRALOG "AFREC" "$MENSAJE_FECHA_INVALIDA" "INFO"
-    #echo "AFREC" "$MENSAJE_FECHA_INVALIDA" "INFO"
-    $MOVERA "$NOVEDADES/$file" "$RECHAZADOS"
-    #mv "$NOVEDADES/$file" "$RECHAZADOS"
-    let "resultado = 1"
-  else
-    : # echo "Mes valido"
+  if [ $(date -d "$fecha_a_validar" +"%Y%b%d" 2>/dev/null 1>/dev/null; echo $?) == 1 ];then
+     $GRALOG "AFREC" "$MENSAJE_FECHA_INVALIDA" "INFO"
+     $MOVERA "$NOVEDADES/$file" "$RECHAZADOS"
+     let "resultado = 1"
   fi
 
-  if [ $dia_a_validar -lt "01" -o $dia_a_validar -gt "31" ]; then
-    # echo "Dia invalido"
-    $GRALOG "AFREC" "$MENSAJE_FECHA_INVALIDA" "INFO"
-    #echo "AFREC" "$MENSAJE_FECHA_INVALIDA" "INFO"
-    $MOVERA "$NOVEDADES/$file" "$RECHAZADOS"
-    #mv "$NOVEDADES/$file" "$RECHAZADOS"
-    let "resultado = 1"
-  else
-   if [ $mes_a_validar -eq "02" ]; then
-    if [ $dia_a_validar -gt "29" ]; then
-    #  echo "Dia invalido"
-     $GRALOG "AFREC" "$MENSAJE_FECHA_INVALIDA" "INFO"
-     #echo "AFREC" "$MENSAJE_FECHA_INVALIDA" "INFO"
-     $MOVERA "$NOVEDADES/$file" "$RECHAZADOS"
-     #mv "$NOVEDADES/$file" "$RECHAZADOS"
-     let "resultado = 1"
-    else
-     bisiesto $anio_a_validar
-     if [ $dia_a_validar -gt "28" -a $es_bisiesto -eq "1" ]; then
-      # echo "Dia invalido"
-      $GRALOG "AFREC" "$MENSAJE_FECHA_INVALIDA" "INFO"
-      #echo "AFREC" "$MENSAJE_FECHA_INVALIDA" "INFO"
-      $MOVERA "$NOVEDADES/$file" "$RECHAZADOS"
-      #mv "$NOVEDADES/$file" "$RECHAZADOS"
-      let "resultado = 1"
-     fi
-    fi
-   fi
-    # echo "Dia valido"
-  fi
 }
 
 # Chequea que no sea de hace mas de un anio

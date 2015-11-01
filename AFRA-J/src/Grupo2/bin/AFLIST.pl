@@ -417,57 +417,63 @@ sub main{
 			my @params = split /_/, $fileName;
 			my @path = split /\//, $params[0];
 			$office = pop(@path);
+			$currAniomes = $params[1]; #agregado 
 			open ($fileHdl,"<", $fileName) or die "no se puede abrir $fileName: $!";
 			while (my $linea=<$fileHdl>) {
 				@tokens = split /;/, $linea;
 				my $numberOfTokens = scalar @tokens;
 				if($numberOfTokens > 12){
 					$office = $tokens[12];
+					$currAniomes = $tokens[13]; #agregado
 				}
-
-
-				if (exists($hashCentralsCalls{$tokens[0]})){
-					$hashCentralsCalls{$tokens[0]} = $hashCentralsCalls{$tokens[0]} + 1;
-					$hashCentralsCallsInSeconds{$tokens[0]} = $hashCentralsCallsInSeconds{$tokens[0]} + $tokens[5];
-				}else{
-					$hashCentralsCalls{$tokens[0]} = 1;
-					$hashCentralsCallsInSeconds{$tokens[0]} = $tokens[5];
-				}
-				
-				if (exists($hashOfficesCalls{$office})){
-					$hashOfficesCalls{$office} = $hashOfficesCalls{$office} + 1;
-					$hashOfficesCallsInSeconds{$office} = $hashOfficesCallsInSeconds{$office} + $tokens[5];
-				}else{
-					$hashOfficesCalls{$office} = 1;
-					$hashOfficesCallsInSeconds{$office} = $tokens[5];
-				}
-
-				if (exists($hashAgentsCalls{$tokens[1]})){
-					$hashAgentsCalls{$tokens[1]} = $hashAgentsCalls{$tokens[1]} + 1;
-					$hashAgentsCallsInSeconds{$tokens[1]} = $hashAgentsCallsInSeconds{$tokens[1]} + $tokens[5];
-				}else{
-					$hashAgentsCalls{$tokens[1]} = 1;
-					$hashAgentsCallsInSeconds{$tokens[1]} = $tokens[5];
-				}
-
-				if ($tokens[8] == ""){ #si es local
-					if (exists($hashAreasCalls{$tokens[9]})){
-						$hashAreasCalls{$tokens[9]} = $hashAreasCalls{$tokens[9]} + 1;
+				#desde
+				$range = $fileFiltersHash{"range"};	
+				@dates = split /-/, $range;
+				if ($currAniomes >= $dates[0] and $currAniomes <= $dates[1]){
+				#hasta
+					if (exists($hashCentralsCalls{$tokens[0]})){
+						$hashCentralsCalls{$tokens[0]} = $hashCentralsCalls{$tokens[0]} + 1;
+						$hashCentralsCallsInSeconds{$tokens[0]} = $hashCentralsCallsInSeconds{$tokens[0]} + $tokens[5];
 					}else{
-						$hashAreasCalls{$tokens[9]} = 1;
+						$hashCentralsCalls{$tokens[0]} = 1;
+						$hashCentralsCallsInSeconds{$tokens[0]} = $tokens[5];
 					}
-				}else{	#si es al exterior, va el codigo de pais, pero negativo
-					if (exists($hashAreasCalls{-$tokens[8]})){
-						$hashAreasCalls{-$tokens[8]} = $hashAreasCalls{-$tokens[8]} + 1;
+					
+					if (exists($hashOfficesCalls{$office})){
+						$hashOfficesCalls{$office} = $hashOfficesCalls{$office} + 1;
+						$hashOfficesCallsInSeconds{$office} = $hashOfficesCallsInSeconds{$office} + $tokens[5];
 					}else{
-						$hashAreasCalls{-$tokens[8]} = 1;
+						$hashOfficesCalls{$office} = 1;
+						$hashOfficesCallsInSeconds{$office} = $tokens[5];
 					}
-				}
 
-				if (exists($hashUmbralsCalls{$tokens[2]})){
-					$hashUmbralsCalls{$tokens[2]} = $hashUmbralsCalls{$tokens[2]} + 1;
-				}else{
-					$hashUmbralsCalls{$tokens[2]} = 1;
+					if (exists($hashAgentsCalls{$tokens[1]})){
+						$hashAgentsCalls{$tokens[1]} = $hashAgentsCalls{$tokens[1]} + 1;
+						$hashAgentsCallsInSeconds{$tokens[1]} = $hashAgentsCallsInSeconds{$tokens[1]} + $tokens[5];
+					}else{
+						$hashAgentsCalls{$tokens[1]} = 1;
+						$hashAgentsCallsInSeconds{$tokens[1]} = $tokens[5];
+					}
+
+					if ($tokens[8] == ""){ #si es local
+						if (exists($hashAreasCalls{$tokens[9]})){
+							$hashAreasCalls{$tokens[9]} = $hashAreasCalls{$tokens[9]} + 1;
+						}else{
+							$hashAreasCalls{$tokens[9]} = 1;
+						}
+					}else{	#si es al exterior, va el codigo de pais, pero negativo
+						if (exists($hashAreasCalls{-$tokens[8]})){
+							$hashAreasCalls{-$tokens[8]} = $hashAreasCalls{-$tokens[8]} + 1;
+						}else{
+							$hashAreasCalls{-$tokens[8]} = 1;
+						}
+					}
+
+					if (exists($hashUmbralsCalls{$tokens[2]})){
+						$hashUmbralsCalls{$tokens[2]} = $hashUmbralsCalls{$tokens[2]} + 1;
+					}else{
+						$hashUmbralsCalls{$tokens[2]} = 1;
+					}
 				}
 			}			
 			close ($fileHdl);
