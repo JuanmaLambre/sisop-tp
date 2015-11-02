@@ -72,6 +72,7 @@ function ValidarDirectorio {
 	do
 		resultado='0'
 		read DIR
+		DIR=$(echo $DIR | sed 's-^/\(.*\)$-\1-' ) #Elimino "/" inicial si existe
 		if [ "$DIR" = "" ]
 		then
 			DIR=$DIR_PREDET
@@ -510,16 +511,17 @@ case $INST_POINT in
 
 		#Creo los directorios
 		echo -e "$MENSAJE_CREANDO_ESTRUCTURAS"
-		bash Archivos/CrearDir.sh "$BINDIR"
-		bash Archivos/CrearDir.sh "$MAEDIR"
-		bash Archivos/CrearDir.sh "$NOVEDIR"
-		bash Archivos/CrearDir.sh "$ACEPDIR"
-		bash Archivos/CrearDir.sh "$PROCDIR"
-		bash Archivos/CrearDir.sh "$PROCDIR/proc"
-		bash Archivos/CrearDir.sh "$REPODIR"
-		bash Archivos/CrearDir.sh "$LOGDIR"
-		bash Archivos/CrearDir.sh "$RECHDIR"
-		bash Archivos/CrearDir.sh "$RECHDIR/llamadas"
+		mkdir -p "$BINDIR"
+		mkdir -p "$MAEDIR"
+		mkdir -p "$NOVEDIR"
+		mkdir -p "$ACEPDIR"
+		mkdir -p "$PROCDIR"
+		mkdir -p "$PROCDIR/proc"
+		mkdir -p "$REPODIR"
+		mkdir -p "$LOGDIR"
+		mkdir -p "$RECHDIR"
+		mkdir -p "$RECHDIR/llamadas"
+		#bash Archivos/CrearDir.sh "$RECHDIR/llamadas" USANDO CrearDir
 
 
 		#Ubico los maestros y tablas
@@ -569,6 +571,9 @@ case $INST_POINT in
 		echo "RECHDIR=$RECHDIR=$USER=$DATE" >> "$CONFDIR/AFINSTAL.cnfg"
 
 		echo -e "$MENSAJE_INTALACION_TERMINADA\n"
+		
+		GRALOG="$BINDIR/GraLog.sh"
+		bash $GRALOG "AFINSTAL" "`echo -e $MENSAJE_INTALACION_TERMINADA\n`" "INFO"
 
 		let "INST_POINT = 21"
 		;;
