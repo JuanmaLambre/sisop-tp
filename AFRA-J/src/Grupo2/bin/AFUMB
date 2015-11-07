@@ -170,7 +170,7 @@ function validar_numero_B {
 			if [[ ( $Tipo == "DDN" || $Tipo == "LOC" ) && ( $(echo -n "$AreaB$LineaB" | wc -m ) != 10 ) ]]; then
 				rechazar_registro "Se rechaza porque la llamada es de tipo $Tipo pero el area y el numero de linea del numero B no suman 10 digitos"
 			else
-				if [ $Duracion =="" ]; then					
+				if [[ $Duracion == "" ]]; then					
 					rechazar_registro "Duracion de la llamada se encuentra vacia"
 				else
 					if [ $Duracion -lt 0 ]; then
