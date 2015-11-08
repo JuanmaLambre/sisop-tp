@@ -225,7 +225,7 @@ while true; do
         # echo "Voy a arrancar AFUMB"
         if [[ $(ps -aux | grep -e "[0-9] [a-z]* AFREC" ) == "" ]];then
           # echo "No se esta ejecutando asi que lo arranco"
-            #bash $BINDIR/Arrancar.sh ./AFUMB
+            bash $BINDIR/Arrancar.sh ./AFUMB
             PID_AFUMB=$(pgrep AFUMB)
             $GRALOG "AFREC" "AFUMB corriendo bajo el no.: $PID_AFUMB" "INFO"
         else
