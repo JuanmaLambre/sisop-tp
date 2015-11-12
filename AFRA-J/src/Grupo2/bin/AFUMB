@@ -17,7 +17,7 @@ function mover_archivo {
 
 	#echo "Se mueve el archivo $1 a la carpeta $2" >> logAFUMB.txt
 	#${BINDIR}MoverA.sh $1 $2
-	$BINDIR/MoverA.sh $1 $2
+	$BINDIR/MoverA.sh $1 $2 "AFUMB"
 }
 
 
