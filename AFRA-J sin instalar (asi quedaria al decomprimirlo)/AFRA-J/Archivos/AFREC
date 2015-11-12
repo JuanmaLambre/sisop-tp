@@ -17,6 +17,7 @@ TIEMPO_SLEEP_SEGUNDOS="30"
 # Mensajes
 MENSAJE_ARCHIVO_ACEPTADO="Archivo $NOMBRE_ARCHIVO aceptado, movido a $PATH_ACEPTADO"
 MENSAJE_TIPO_INVALIDO="Tipo de archivo invalido"
+MENSAJE_NOMBRE_ARCHIVO_INVALIDO="Nombre de archivo invalido"
 MENSAJE_FECHA_INVALIDA="Fecha invalida"
 MENSAJE_FECHA_FUERA_DE_RANGO="Fecha fuera de rango"
 MENSAJE_CENTRAL_INEXISTENTE="Central inexistente"
@@ -38,10 +39,16 @@ function hay_archivos() {
 # Los que no los mueve a $RECHAZADOS
 function validar_tipo_archivos (){
   # echo "Estoy en validar tipo archivos"
-	for archivo in $(ls -1 "$NOVEDADES");do
+	# for archivo in $(ls -1 "$NOVEDADES");do
+  for archivo in `ls $NOVEDADES` ;do
     # echo "Valido archivo"
     # echo "$NOVEDADES/$archivo"
-		if [ $(file "$NOVEDADES/$archivo" | grep -c "text") = 0 ];then
+    if [[ "$(echo $archivo | sed 's/^.*_.\{8\}\.[^.]*$//')" != "" ]];then
+      $GRALOG "AFREC" "$MENSAJE_NOMBRE_ARCHIVO_INVALIDO" "INFO"
+      #echo "AFREC" "$MENSAJE_TIPO_INVALIDO" "INFO"
+      # echo "Soy el file invalido $archivo"
+      $MOVERA "$NOVEDADES/$archivo" "$RECHAZADOS" "$0"
+    elif [ $(file "$NOVEDADES/$archivo" | grep -c "text") = 0 ];then
       $GRALOG "AFREC" "$MENSAJE_TIPO_INVALIDO" "INFO"
       #echo "AFREC" "$MENSAJE_TIPO_INVALIDO" "INFO"
       # echo "Soy el file invalido $archivo"
@@ -159,6 +166,8 @@ function validar_menor_o_igual_a_hoy() {
 # BEGIN
 let "NUMERO_CICLO = 0"
 while true; do
+  let "OLD_IFS = IFS"
+  IFS=$'\n'
   MENSAJE_NUMERO_CICLO="AFREC ciclo nro. $NUMERO_CICLO"
   #echo $MENSAJE_NUMERO_CICLO
   $GRALOG "AFREC" "$MENSAJE_NUMERO_CICLO" "INFO"
@@ -223,7 +232,8 @@ while true; do
       hay_archivos $ACEPTADOS
       if [ $cantidad_archivos -gt 0 ];then
         # echo "Voy a arrancar AFUMB"
-        if [[ $(ps -aux | grep -e "[0-9] [a-z]* AFREC" ) == "" ]];then
+        let "IFS = OLD_IFS"
+        if [[ $(ps -aux | grep -e "[0-9] [a-z]* AFUMB" ) == "" ]];then
           # echo "No se esta ejecutando asi que lo arranco"
             bash $BINDIR/Arrancar.sh ./AFUMB
             PID_AFUMB=$(pgrep AFUMB)
@@ -235,6 +245,7 @@ while true; do
       fi
   fi
 
+  let "IFS = OLD_IFS"
 
 sleep "$TIEMPO_SLEEP_SEGUNDOS"
 done
