@@ -75,7 +75,7 @@ function ValidarDirectorio {
 		DIR=$(echo $DIR | sed 's-^/\(.*\)$-\1-' ) #Elimino "/" inicial si existe
 		if [ "$DIR" = "" ]
 		then
-			DIR=$DIR_PREDET
+			DIR="$DIR_PREDET"
 		else
 			for dir in ${DIRECTORIOS[*]}
 			do
@@ -87,7 +87,7 @@ function ValidarDirectorio {
 			done
 		fi
 	done
-	echo $DIR
+	echo "$DIR"
 }
 
 # Lee un directorio, lo valida y graba la respuesta en un archivo de log
@@ -99,9 +99,9 @@ function DefinirDirectorio {
 
 	DIR=$(ValidarDirectorio "$DIR_PREDET" "${ARRAY_DIR[@]}" )
 	MENSAJE_LOG="$MENSAJE $DIR"
-	bash $GRALOG "AFINSTAL" "`echo -e $MENSAJE_LOG`" "$TIPO_LOG"
+	bash "$GRALOG" "AFINSTAL" "`echo -e $MENSAJE_LOG`" "$TIPO_LOG"
 
-	echo $DIR
+	echo "$DIR"
 }
 
 # Lee una respuesta y valida que sea 'si' o 'no'
@@ -116,7 +116,7 @@ function ValidarRespuestaSiNo {
 		read RESPUESTA
 	done
 	MENSAJE_LOG="$MENSAJE $RESPUESTA"
-	bash $GRALOG "AFINSTAL" "`echo -e $MENSAJE_LOG`" "INFO"
+	bash "$GRALOG" "AFINSTAL" "`echo -e $MENSAJE_LOG`" "INFO"
 
 	echo $RESPUESTA
 }
@@ -195,7 +195,7 @@ function ValidarExtension {
 
 	done
 	MENSAJE_EXTENSION="$MENSAJE $LOGEXT"
-	bash $GRALOG "AFINSTAL" "`echo -e $MENSAJE_EXTENSION`" "$TIPO_LOG"
+	bash "$GRALOG" "AFINSTAL" "`echo -e $MENSAJE_EXTENSION`" "$TIPO_LOG"
 
 	echo $EXT
 }
@@ -236,7 +236,7 @@ case $INST_POINT in
 		#Verifico donde se encuentra GraLog	y MoverA, si no estan no puedo continuar
 		if [ -f "$bindir/GraLog.sh" ]
 		then
-			GRALOG=$bindir/GraLog.sh
+			GRALOG="$bindir"/GraLog.sh
 		elif ! [ -f "$ARCHDIR/GraLog.sh" ]
 		then
 			echo "$MENSAJE_GRALOG_INEXIST"
@@ -245,7 +245,7 @@ case $INST_POINT in
 
 		if [ -f "$bindir/MoverA.sh" ]
 		then
-			MOVERA=$bindir/MoverA.sh
+			MOVERA="$bindir"/MoverA.sh
 		elif ! [ -f "$ARCHDIR/MoverA.sh" ]
 		then
 			echo "$MENSAJE_MOVERA_INEXIST"
@@ -309,9 +309,9 @@ case $INST_POINT in
 			fi
 		fi
 
-		if [ -f $GRALOG ]
+		if [ -f "$GRALOG" ]
 		then
-			bash $GRALOG "AFINSTAL" "`echo -e $MENSAJE_ESTADO_INST`" "INFO"
+			bash "$GRALOG" "AFINSTAL" "`echo -e $MENSAJE_ESTADO_INST`" "INFO"
 		fi
 		;;
 
@@ -324,7 +324,7 @@ case $INST_POINT in
 			echo -e $MENSAJE_ARCH_FALTANTES
 			if [ -f "$GRALOG" ]
 			then
-				bash $GRALOG "AFINSTAL" "`echo -e $MENSAJE_ESTADO_INST`" "INFO"
+				bash "$GRALOG" "AFINSTAL" "`echo -e $MENSAJE_ESTADO_INST`" "INFO"
 			fi
 			exit
 		fi
@@ -332,12 +332,12 @@ case $INST_POINT in
 		#Ubico los archivos donde deban ir
 		for file in ${ArchivosMAEFaltantes[*]}
 		do
-			bash $MOVERA "$archdir/$file" "$maedir"
+			bash "$MOVERA" "$archdir/$file" "$maedir" "AFINSTAL"
 		done
 
 		for file in ${ArchivosBINFaltantes[*]}
 		do
-			bash $MOVERA "$archdir/$file" "$bindir"
+			bash "$MOVERA" "$archdir/$file" "$bindir" "AFINSTAL"
 		done
 
 
@@ -354,7 +354,7 @@ case $INST_POINT in
 							 \nEstado de la instalación: COMPLETA
 							 \nProceso de Instalación Finalizado"
 
-		bash $bindir/GraLog.sh "AFINSTAL" "`echo -e $MENSAJE_ESTADO_INST`" "INFO"
+		bash "$bindir"/GraLog.sh "AFINSTAL" "`echo -e $MENSAJE_ESTADO_INST`" "INFO"
 		let "INST_POINT = 21"
 		;;
 
@@ -383,7 +383,7 @@ case $INST_POINT in
 			let "INST_POINT = 21"
 		fi
 		echo -e $MENSAJE_PERL
-		bash $GRALOG "AFINSTAL" "`echo -e $MENSAJE_PERL`" "$TIPO_LOG"
+		bash "$GRALOG" "AFINSTAL" "`echo -e $MENSAJE_PERL`" "$TIPO_LOG"
 		;;
 
 	5)  #Punto 5: Aceptación de términos y condiciones
@@ -430,11 +430,11 @@ case $INST_POINT in
 			DATASIZE="100"
 			echo -n -e $MENSAJE_ESPACIO_INSUF
 			echo -n -e $MENSAJE_ESPACIO_MINIMO_NOV
-			bash $GRALOG "AFINSTAL" "`echo -e $MENSAJE_ESPACIO_INSUF`" "ERR"
+			bash "$GRALOG" "AFINSTAL" "`echo -e $MENSAJE_ESPACIO_INSUF`" "ERR"
 			DATASIZE=$(ValidarNumero $DATASIZE)
 		done
 		MENSAJE_ESPACIO_MINIMO_NOV="$MENSAJE_ESPACIO_MINIMO_NOV $DATASIZE"
-		bash $GRALOG "AFINSTAL" "`echo -e $MENSAJE_ESPACIO_MINIMO_NOV`" "INFO"
+		bash "$GRALOG" "AFINSTAL" "`echo -e $MENSAJE_ESPACIO_MINIMO_NOV`" "INFO"
 
 	    #Punto 11: Definir el directorio de input del proceso AFUMB
 		MENSAJE_NOV_ACEPTADAS="\nDefina el directorio de grabación de los archivos de llamadas aceptadas"
@@ -465,7 +465,7 @@ case $INST_POINT in
 		echo -n -e "$MENSAJE_TAM_MAXIMO_LOG"
 		LOGSIZE=$(ValidarNumero "$LOGSIZE")
 		MENSAJE_TAM_MAXIMO_LOG="$MENSAJE_TAM_MAXIMO_LOG $LOGSIZE"
-		bash $GRALOG "AFINSTAL" "`echo -e $MENSAJE_TAM_MAXIMO_LOG`" "INFO"
+		bash "$GRALOG" "AFINSTAL" "`echo -e $MENSAJE_TAM_MAXIMO_LOG`" "INFO"
 
 	    #Punto 17: Definir repositorio de archivos rechazados
 		MENSAJE_DIR_ARCH_RECHAZADOS="\nDefina el directorio de grabación de Archivos rechazados"
@@ -528,14 +528,14 @@ case $INST_POINT in
 		echo "$MENSAJE_INST_MAESTROS_TABLAS"
 		for file in ${ArchivosMAE[*]}
 		do
-			bash $MOVERA "$ARCHDIR/$file" "$MAEDIR"
+			bash "$MOVERA" "$ARCHDIR/$file" "$MAEDIR" "AFINSTAL"
 		done
 
 		#Ubico los scripts
 		echo "$MENSAJE_INST_PROGRAMAS"
 		for file in ${ArchivosBIN[*]}
 		do
-			bash $MOVERA "$ARCHDIR/$file" "$BINDIR"
+			bash "$MOVERA" "$ARCHDIR/$file" "$BINDIR" "AFINSTAL"
 		done
 
 
@@ -544,16 +544,16 @@ case $INST_POINT in
 		DATE=`date +"%y-%m-%d %H:%M"`
 
 		#Calculo la ruta completa de cada directorio
-		GRUPO=$(readlink   -f $GRUPO)
-		CONFDIR=$(readlink -f $CONFDIR)
-		BINDIR=$(readlink  -f $BINDIR)
-		MAEDIR=$(readlink  -f $MAEDIR)
-		NOVEDIR=$(readlink -f $NOVEDIR)
-		ACEPDIR=$(readlink -f $ACEPDIR)
-		PROCDIR=$(readlink -f $PROCDIR)
-		REPODIR=$(readlink -f $REPODIR)
-		LOGDIR=$(readlink  -f $LOGDIR)
-		RECHDIR=$(readlink -f $RECHDIR)
+		GRUPO=$(readlink   -f "$GRUPO")
+		CONFDIR=$(readlink -f "$CONFDIR")
+		BINDIR=$(readlink  -f "$BINDIR")
+		MAEDIR=$(readlink  -f "$MAEDIR")
+		NOVEDIR=$(readlink -f "$NOVEDIR")
+		ACEPDIR=$(readlink -f "$ACEPDIR")
+		PROCDIR=$(readlink -f "$PROCDIR")
+		REPODIR=$(readlink -f "$REPODIR")
+		LOGDIR=$(readlink  -f "$LOGDIR")
+		RECHDIR=$(readlink -f "$RECHDIR")
 
 
 		echo "GRUPO=$GRUPO=$USER=$DATE" >> "$CONFDIR/AFINSTAL.cnfg"
@@ -573,7 +573,7 @@ case $INST_POINT in
 		echo -e "$MENSAJE_INTALACION_TERMINADA\n"
 		
 		GRALOG="$BINDIR/GraLog.sh"
-		bash $GRALOG "AFINSTAL" "`echo -e $MENSAJE_INTALACION_TERMINADA\n`" "INFO"
+		bash "$GRALOG" "AFINSTAL" "`echo -e $MENSAJE_INTALACION_TERMINADA`" "INFO"
 
 		let "INST_POINT = 21"
 		;;
@@ -587,7 +587,7 @@ case $INST_POINT in
 			echo -e $MENSAJE_ARCH_FALTANTES
 			if [ -f "$GRALOG" ]
 			then
-				bash $GRALOG "AFINSTAL" "`echo -e $MENSAJE_ARCH_FALTANTES`" "ERR"
+				bash "$GRALOG" "AFINSTAL" "`echo -e $MENSAJE_ARCH_FALTANTES`" "ERR"
 			fi
 			let "INST_POINT = 21"
 		fi
